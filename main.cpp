@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     MainWindow w;
-    // Load the splash screen image
+    // Load the splash screen image from resources
     QPixmap pixmap(":/splash/logo.jpeg");
 
     // Get the primary screen size
