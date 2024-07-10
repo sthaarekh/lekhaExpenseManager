@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "home.h"
 #include <QSplashScreen>
 #include <QTimer>
 #include <QPixmap>
@@ -7,12 +8,14 @@
 #include <QApplication>
 #include <QWidget>
 #include <QFont>
+
 int main(int argc, char *argv[])
 {
-
     QApplication app(argc, argv);
     MainWindow w;
-    // Load the splash screen image
+    Home *homeWindow = new Home();
+
+    // Load the splash screen image from resources
     QPixmap pixmap(":/splash/logo.jpeg");
 
     // Get the primary screen size
@@ -24,8 +27,8 @@ int main(int argc, char *argv[])
     QPixmap whiteBackground(screenSize);
     whiteBackground.fill(Qt::white);
 
-    //setting the splash screen image onto the white background
-    QSize desiredSize(450, 450);    //Resizing the image
+    // Setting the splash screen image onto the white background
+    QSize desiredSize(450, 450);    // Resizing the image
     QPainter painter(&whiteBackground);
     QPixmap scaledPixmap = pixmap.scaled(desiredSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     int x = (screenSize.width() - scaledPixmap.width()) / 2;
@@ -33,9 +36,7 @@ int main(int argc, char *argv[])
     painter.drawPixmap(x, y, scaledPixmap);
     painter.end();
 
-
-
-    // Changing the backgroung to white of splash screen
+    // Changing the background to white of splash screen
     QSplashScreen splash(whiteBackground);
 
     // Centering the splash screen
@@ -44,15 +45,19 @@ int main(int argc, char *argv[])
     splash.move(centerX, centerY);
     splash.showFullScreen();
 
-    QFont font("Poppins", 25); //Changing the font of loading message
-    splash.setFont(font);   //Setting the font
+    QFont font("Poppins", 25); // Changing the font of loading message
+    splash.setFont(font);      // Setting the font
 
     // Display a loading message
     splash.showMessage("Loading Expense Manager...", Qt::AlignBottom | Qt::AlignCenter, Qt::black);
 
     // Simulate some loading time
     QTimer::singleShot(3000, &splash, &QSplashScreen::close); // Close the splash screen after 3 seconds
-    QTimer::singleShot(3000, &w, &QWidget::showFullScreen); // Show the main window after 3 seconds
+
+    // Show the home window after the splash screen is closed
+    QTimer::singleShot(3000, [homeWindow]() {
+        homeWindow->showMaximized();
+    });
 
     return app.exec();
 }
