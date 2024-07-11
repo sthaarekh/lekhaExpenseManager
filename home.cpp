@@ -12,3 +12,11 @@ Home::~Home()
 {
     delete ui;
 }
+
+void Home::on_pushButton_clicked()
+{
+    this->hide();
+    analytics = new Analytics(this);
+    analytics->showMaximized();
+}
+
