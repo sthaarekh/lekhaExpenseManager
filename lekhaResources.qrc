@@ -3,4 +3,14 @@
         <file>logo1.png</file>
         <file>logo.jpeg</file>
     </qresource>
+    <qresource prefix="/pics">
+        <file>LekhaResources/altclot.png</file>
+        <file>LekhaResources/education.png</file>
+        <file>LekhaResources/entertainment.png</file>
+        <file>LekhaResources/food.jpg</file>
+        <file>LekhaResources/health.png</file>
+        <file>LekhaResources/rent.png</file>
+        <file>LekhaResources/shoppingcart.png</file>
+        <file>LekhaResources/transportation.png</file>
+    </qresource>
 </RCC>
