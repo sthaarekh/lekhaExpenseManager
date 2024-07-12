@@ -12,5 +12,7 @@
         <file>LekhaResources/rent.png</file>
         <file>LekhaResources/shoppingcart.png</file>
         <file>LekhaResources/transportation.png</file>
+        <file>LekhaResources/resizedImage.png</file>
+        <file>LekhaResources/logo3.png</file>
     </qresource>
 </RCC>

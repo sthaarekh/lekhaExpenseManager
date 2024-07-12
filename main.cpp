@@ -52,11 +52,11 @@ int main(int argc, char *argv[])
     splash.showMessage("Loading Expense Manager...", Qt::AlignBottom | Qt::AlignCenter, Qt::black);
 
     // Simulate some loading time
-    QTimer::singleShot(3000, &splash, &QSplashScreen::close); // Close the splash screen after 3 seconds
+    QTimer::singleShot(30, &splash, &QSplashScreen::close); // Close the splash screen after 3 seconds
 
     // Show the home window after the splash screen is closed
-    QTimer::singleShot(3000, [homeWindow]() {
-        homeWindow->showMaximized();
+    QTimer::singleShot(30, [homeWindow]() {
+        homeWindow->show();
     });
 
     return app.exec();

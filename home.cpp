@@ -17,6 +17,6 @@ void Home::on_pushButton_clicked()
 {
     this->hide();
     analytics = new Analytics(this);
-    analytics->showMaximized();
+    analytics->show();
 }
 
