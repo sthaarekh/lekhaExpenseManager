@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
     // Show the home window after the splash screen is closed
     QTimer::singleShot(3000, [homeWindow]() {
-        homeWindow->showMaximized();
+        homeWindow->show();
     });
 
     return app.exec();
