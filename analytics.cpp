@@ -8,10 +8,11 @@ Analytics::Analytics(QWidget *parent)
     , ui(new Ui::Analytics)
 {
     ui->setupUi(this);
-    setupChart();
+    setupPieChart();
+    setupBarChart();
 }
 
-void Analytics::on_pushButton_clicked()
+void Analytics::on_homeButton_clicked()
 {
     this->hide();
     homeWindow = new Home;
@@ -23,7 +24,7 @@ Analytics::~Analytics()
     delete ui;
 }
 
-void Analytics::setupChart()
+void Analytics::setupPieChart()
 {
     // Create the pie series
     QPieSeries *series = new QPieSeries();
@@ -53,7 +54,7 @@ void Analytics::setupChart()
     chart->addSeries(series);
     chart->setTitle("Expense Distribution");
     chart->setTheme(QChart::ChartThemeLight);
-
+    chart->setAnimationOptions(QChart::SeriesAnimations);
     // Hide the legend
     chart->legend()->setVisible(false);
 
@@ -65,7 +66,61 @@ void Analytics::setupChart()
     // Add the chart view to an existing layout in the UI
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(chartView);
-    ui->chartWidget->setLayout(layout);
+    ui->pieChartWidget->setLayout(layout);
+}
+
+void Analytics::setupBarChart()
+{
+    // Create the bar series
+    QBarSeries *series = new QBarSeries();
+    QBarSet *set_1 = new QBarSet("Shubham is Great");
+    set_1->append(8400);
+    set_1->append(9000);
+    set_1->append(7234);
+    set_1->append(8000);
+    set_1->append(10000);
+    series->append(set_1);
+
+    connect(set_1, &QBarSet::hovered, this, [this, set_1](bool state) {
+        onBarHovered(set_1, state);
+    });
+    // Create the chart
+    QChart *chart = new QChart();
+    chart->addSeries(series);
+    chart->setTitle("Monthly Expenditure");
+    chart->setAnimationOptions(QChart::SeriesAnimations);
+
+    // Set up the X axis
+    QStringList subjectNames;
+    subjectNames.append("July");
+    subjectNames.append("August");
+    subjectNames.append("September");
+    subjectNames.append("October");
+    subjectNames.append("November");
+    QBarCategoryAxis *axisX = new QBarCategoryAxis();
+    axisX->append(subjectNames);
+    chart->addAxis(axisX, Qt::AlignBottom);
+    series->attachAxis(axisX);
+
+    // Set up the Y axis
+    QValueAxis *axisY = new QValueAxis();
+    axisY->setRange(0, 15000);
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisY);
+
+    // Set up the legend
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
+
+    QChartView *chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+
+    chartView->resize(1200, 1000); // Adjust width and height as needed
+
+    // Add the chart view to an existing layout in the UI
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(chartView);
+    ui->barChartWidget->setLayout(layout);
 }
 
 void Analytics::onSliceHovered(QPieSlice *slice, bool state)
@@ -85,4 +140,19 @@ void Analytics::onSliceHovered(QPieSlice *slice, bool state)
         QToolTip::hideText(); // Hide tooltip when not hovered
     }
 }
+
+void Analytics::onBarHovered(QBarSet *barSet, bool state)
+{
+    if (state)
+    {
+        // Get the value of the bar set
+        QString tooltipText = QString::number(barSet->at(0)); // Adjust index based on your needs
+        QToolTip::showText(QCursor::pos(), tooltipText);
+    }
+    else
+    {
+        QToolTip::hideText(); // Hide tooltip when not hovered
+    }
+}
+
 

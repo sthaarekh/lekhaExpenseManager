@@ -1,6 +1,7 @@
 #ifndef ANALYTICS_H
 #define ANALYTICS_H
 
+#include<QSqlDatabase>
 #include    <QMainWindow>
 
 #include    <QtCore>
@@ -10,6 +11,9 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
+#include <QBarSeries>
+#include <QBarSet>
+#include <QVBoxLayout>
 
 class Home;
 namespace Ui {
@@ -25,11 +29,13 @@ public:
     ~Analytics();
 
 private slots:
-    void on_pushButton_clicked();
-    void setupChart();
+    void on_homeButton_clicked();
+    void setupPieChart();
+    void setupBarChart();
     void onSliceHovered(QPieSlice *slice, bool state);
-    // void onSliceHovered(bool hovered);
-    // QPieSeries *series;
+    void onBarHovered(QBarSet *barSet, bool state);
+
+
 
 private:
     Ui::Analytics *ui;
