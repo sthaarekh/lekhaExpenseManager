@@ -32,19 +32,31 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="minimumSize">
+    <size>
+     <width>1510</width>
+     <height>850</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>1510</width>
+     <height>850</height>
+    </size>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QFrame" name="frame">
       <property name="minimumSize">
        <size>
-        <width>0</width>
-        <height>0</height>
+        <width>1510</width>
+        <height>850</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>18000</width>
-        <height>10000</height>
+        <width>1510</width>
+        <height>850</height>
        </size>
       </property>
       <property name="palette">
@@ -309,6 +321,12 @@ color:rgb(109, 109, 109);</string>
          <width>1501</width>
          <height>80</height>
         </rect>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>1510</width>
+         <height>850</height>
+        </size>
        </property>
        <property name="palette">
         <palette>
@@ -954,7 +972,7 @@ QPushButton:hover{
      <x>0</x>
      <y>0</y>
      <width>1560</width>
-     <height>19</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuanalytics">

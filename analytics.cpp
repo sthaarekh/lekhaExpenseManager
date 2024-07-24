@@ -8,8 +8,22 @@ Analytics::Analytics(QWidget *parent)
     , ui(new Ui::Analytics)
 {
     ui->setupUi(this);
+    // Connecting to the SQLite database
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db"); // SQLite database location
+    db.open();
+
+    if (!db.open()) {
+        qDebug() << "Failed to connect to database: " << db.lastError();
+        return;
+    }
+
     setupPieChart();
     setupBarChart();
+}
+Analytics::~Analytics()
+{
+    delete ui;
 }
 
 void Analytics::on_homeButton_clicked()
@@ -19,10 +33,51 @@ void Analytics::on_homeButton_clicked()
     homeWindow->showFullScreen();
 }
 
-Analytics::~Analytics()
-{
-    delete ui;
+// Get the total expense from the userrec table
+double Analytics::getTotalExpense(){
+    QSqlQuery query;
+    query.prepare("SELECT amount FROM userrec");
+    if (!query.exec()) {
+        qDebug() << "Error executing query:" << query.lastError();
+        return 0.0;
+    }
+    double totalAmount = 0.0;
+    // Loop through the query results and sum up the amounts
+    while(query.next()){
+        totalAmount += query.value(0).toDouble();
+    }
+    return totalAmount;
 }
+
+
+// Get the percentage of expenses for a specific category
+double Analytics::getExpensePercent(const QString &category){
+    QSqlQuery query;
+    query.prepare("SELECT amount FROM userrec WHERE category = :category");
+    query.bindValue(":category", category);
+
+    if (!query.exec()) {
+        qDebug() << "Error executing query:" << query.lastError();
+        return 0.0;
+    }
+
+    double categoryAmount = 0.0;
+    while (query.next()) {
+        categoryAmount += query.value(0).toDouble();
+    }
+
+    // Calculate the percentage of the category expense relative to the total expense
+    double totalExpense = getTotalExpense();
+    qDebug() << totalExpense;
+    qDebug() << categoryAmount;
+    double percentage = 0.0;
+    if (totalExpense > 0) {
+        percentage = (categoryAmount / totalExpense) * 100;
+    }
+
+    return percentage;
+}
+
 
 void Analytics::setupPieChart()
 {
@@ -31,19 +86,24 @@ void Analytics::setupPieChart()
     series->setHoleSize(0.3);
 
     // Append slices and set colors
-    QPieSlice *foodSlice = series->append("Food", 30);
+    double foodExpense = getExpensePercent("food");
+    QPieSlice *foodSlice = series->append("Food", foodExpense);
     foodSlice->setColor(QColor(0, 168, 107));
 
-    QPieSlice *rentSlice = series->append("Rent", 10);
+    double rentExpense = getExpensePercent("rent");
+    QPieSlice *rentSlice = series->append("Rent", rentExpense);
     rentSlice->setColor(QColor(15, 82, 186));
 
-    QPieSlice *educationSlice = series->append("Education", 20);
+    double educationExpense = getExpensePercent("education");
+    QPieSlice *educationSlice = series->append("Education", educationExpense);
     educationSlice->setColor(QColor(0, 128, 255));
 
-    QPieSlice *healthSlice = series->append("Health", 20);
+    double healthExpense = getExpensePercent("health");
+    QPieSlice *healthSlice = series->append("Health", healthExpense);
     healthSlice->setColor(QColor(210, 31, 60));
 
-    QPieSlice *entertainmentSlice = series->append("Entertainment", 20);
+    double entertainmentExpense = getExpensePercent("entertainment");
+    QPieSlice *entertainmentSlice = series->append("Entertainment", entertainmentExpense);
     entertainmentSlice->setColor(QColor(239, 130, 13));
 
     // Connect the hovered signal to the slot
