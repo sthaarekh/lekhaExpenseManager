@@ -10,7 +10,7 @@ Analytics::Analytics(QWidget *parent)
     ui->setupUi(this);
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db"); // SQLite database location
+    db.setDatabaseName("C:/Programming/project/lekhaExpenseManager/database/mydb.db"); // SQLite database location
     db.open();
 
     if (!db.open()) {
@@ -106,6 +106,10 @@ void Analytics::setupPieChart()
     QPieSlice *entertainmentSlice = series->append("Entertainment", entertainmentExpense);
     entertainmentSlice->setColor(QColor(239, 130, 13));
 
+    double miscellaneousExpense = getExpensePercent("miscellaneous");
+    QPieSlice *miscellaneousSlice = series->append("Miscellaneous", miscellaneousExpense);
+    miscellaneousSlice->setColor(QColor(100, 108, 17));
+
     // Connect the hovered signal to the slot
     connect(series, &QPieSeries::hovered, this, &Analytics::onSliceHovered);
 
@@ -116,7 +120,8 @@ void Analytics::setupPieChart()
     chart->setTheme(QChart::ChartThemeLight);
     chart->setAnimationOptions(QChart::SeriesAnimations);
     // Hide the legend
-    chart->legend()->setVisible(false);
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignRight);
 
     QChartView *chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
