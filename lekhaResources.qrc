@@ -16,7 +16,4 @@
         <file>LekhaResources/logo3.png</file>
         <file>LekhaResources/448996984_519875650508150_7341444087745771936_n.png</file>
     </qresource>
-    <qresource prefix="/database">
-        <file>database/mydb.db</file>
-    </qresource>
 </RCC>

@@ -16,7 +16,8 @@
 #include <QBarSeries>
 #include <QBarSet>
 #include <QVBoxLayout>
-
+#include <QToolTip>
+#include <QDate>
 class Home;
 namespace Ui {
 class Analytics;
@@ -35,15 +36,19 @@ private slots:
     void setupPieChart();
     void setupBarChart();
     void onSliceHovered(QPieSlice *slice, bool state);
-    void onBarHovered(QBarSet *barSet, bool state);
-    double getExpensePercent(const QString &category);
-    double getTotalExpense();
+    void onBarHovered(QBarSet *barSet, bool state, int index);
+    double getExpensePercent(const QString &category, int year, int month);
+    double getTotalExpense(int year, int month);
 
+
+    void on_calendarWidget_currentPageChanged(int year, int month);
 
 private:
     Ui::Analytics *ui;
     Home *homeWindow;
     QSqlDatabase db;
+    int selectedYear;
+    int selectedMonth;
 };
 
 #endif // ANALYTICS_H
