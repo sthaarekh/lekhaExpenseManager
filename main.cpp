@@ -9,11 +9,14 @@
 #include <QWidget>
 #include <QFont>
 
+#include "capital.h"
+#include "analytics.h"
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow w;
     Home *homeWindow = new Home();
+    static Analytics analytics; // Create an Analytics object
 
     // Load the splash screen image from resources
     QPixmap pixmap(":/splash/logo.jpeg");
@@ -52,12 +55,14 @@ int main(int argc, char *argv[])
     splash.showMessage("Loading Expense Manager...", Qt::AlignBottom | Qt::AlignCenter, Qt::black);
 
     // Simulate some loading time
-    QTimer::singleShot(3000, &splash, &QSplashScreen::close); // Close the splash screen after 3 seconds
+    QTimer::singleShot(1000, &splash, &QSplashScreen::close); // Close the splash screen after 3 seconds
 
     // Show the home window after the splash screen is closed
-    QTimer::singleShot(3000, [homeWindow]() {
-        homeWindow->show();
+    QTimer::singleShot(1000, [homeWindow]() {
+        homeWindow->showFullScreen();
+        Capital capital(analytics);
     });
+
 
     return app.exec();
 }
