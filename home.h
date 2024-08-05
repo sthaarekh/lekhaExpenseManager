@@ -32,6 +32,7 @@ class Home : public QMainWindow
 
 public:
     explicit Home(QWidget *parent = nullptr);
+    static void callAvailableBalance();
     ~Home();
 
 private slots:
@@ -61,6 +62,8 @@ private:
     void notifyLendBorrow();
     void updateData(int id, const QString &amount, const QString &description, const QString &category);
     void deleteItem();
+    void showAvailableBalance();
+    void createTables();
 
 };
 
