@@ -33,6 +33,7 @@ Analytics::Analytics(QWidget *parent)
     selectedMonth = currentDate.month();
     displayCapital();
     displayLB();
+    showAvailableBalance();
     setupPieChart();
     setupBarChart();
 }
@@ -90,9 +91,9 @@ void Analytics::setupPieChart()
     QPieSlice *foodSlice = series->append("Food", foodExpense);
     foodSlice->setColor(QColor(0, 168, 107));
 
-    double rentExpense = Capital::getExpensePercent("rent", selectedYear, selectedMonth);
-    QPieSlice *rentSlice = series->append("Rent", rentExpense);
-    rentSlice->setColor(QColor(15, 82, 186));
+    double housingExpense = Capital::getExpensePercent("housing", selectedYear, selectedMonth);
+    QPieSlice *housingSlice = series->append("Housing", housingExpense);
+    housingSlice->setColor(QColor(15, 82, 186));
 
     double educationExpense = Capital::getExpensePercent("education", selectedYear, selectedMonth);
     QPieSlice *educationSlice = series->append("Education", educationExpense);
@@ -102,13 +103,17 @@ void Analytics::setupPieChart()
     QPieSlice *healthSlice = series->append("Health", healthExpense);
     healthSlice->setColor(QColor(210, 31, 60));
 
+    double transportationExpense = Capital::getExpensePercent("transportation", selectedYear, selectedMonth);
+    QPieSlice *transportationSlice = series->append("Transportation", transportationExpense);
+    transportationSlice->setColor(QColor(52, 73, 94));
+
     double entertainmentExpense = Capital::getExpensePercent("entertainment", selectedYear, selectedMonth);
     QPieSlice *entertainmentSlice = series->append("Entertainment", entertainmentExpense);
     entertainmentSlice->setColor(QColor(239, 130, 13));
 
-    double miscallaneousExpense = Capital::getExpensePercent("miscallaneous", selectedYear, selectedMonth);
-    QPieSlice *miscallaneousSlice = series->append("Miscallaneous", miscallaneousExpense);
-    miscallaneousSlice->setColor(QColor(100, 108, 17));
+    double miscellaneousExpense = Capital::getExpensePercent("miscellaneous", selectedYear, selectedMonth);
+    QPieSlice *miscellaneousSlice = series->append("Miscellaneous", miscellaneousExpense);
+    miscellaneousSlice->setColor(QColor(100, 108, 17));
 
     // Connect the hovered signal to the slot
     connect(series, &QPieSeries::hovered, this, &Analytics::onSliceHovered);
@@ -217,8 +222,6 @@ void Analytics::setupBarChart()
     QVBoxLayout *layout = new QVBoxLayout(chartContainer);
     layout->addWidget(chartView);
 
-    // Apply the stylesheet to set the background color
-    chartContainer->setStyleSheet("background-color: #f0f0f0;"); // Change to your desired color
 
     // Add the chart container to an existing layout in the UI
     ui->barChartWidget->setLayout(new QVBoxLayout());
@@ -242,7 +245,7 @@ void Analytics::onBarHovered(QBarSet *barSet, bool state, int index)
 
 
 
-bool Analytics::displayCapital(){
+void Analytics::displayCapital(){
     double amount = Capital::getCapital(selectedMonth,selectedYear);
     // Convert the double to QString
     QString amountString = QString::number(amount);
@@ -273,10 +276,16 @@ void Analytics::on_calendarWidget_currentPageChanged(int year, int month)
     displayCapital();
 }
 
+void Analytics::showAvailableBalance(){
+    double amount = Capital::getAvailableBalance();
+    ui->avBalance->setText(QString::number(amount));
+}
 
 
 void Analytics::on_pushButton_clicked()
 {
     Capital::addCapital();
+    Analytics::displayCapital();
+    Analytics::showAvailableBalance();
 }
 

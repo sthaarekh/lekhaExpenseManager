@@ -1,7 +1,7 @@
 #include "home.h"
 #include "ui_home.h"
 #include "capital.h"
-
+#include <QPixmap>
 Home::Home(QWidget *parent)
     :QMainWindow(parent)
     , ui(new Ui::Home)
@@ -17,12 +17,11 @@ Home::Home(QWidget *parent)
     this->setFixedSize(this->width(), this->height());
 
     ui->category->addItem("Food");
-    ui->category->addItem("Rent");
-    ui->category->addItem("Transportation");
+    ui->category->addItem("Housing");
     ui->category->addItem("Education");
-    ui->category->addItem("Clothing");
     ui->category->addItem("Health");
-    ui->category->addItem("Miscallaneous");
+    ui->category->addItem("Transportation");
+    ui->category->addItem("Miscellaneous");
     ui->payMode->addItem("Self");
     ui->payMode->addItem("Borrow");
 
@@ -40,17 +39,12 @@ Home::Home(QWidget *parent)
         return;
     }
 
-    // Creates table lendBorrow if it is missing
-    QSqlQuery query;
-    if (query.exec("CREATE TABLE IF NOT EXISTS lendBorrow (id INTEGER PRIMARY KEY AUTOINCREMENT, amount TEXT, description TEXT, tag TEXT)")) {
-        qDebug() << "Table created successfully";
-    } else {
-        qDebug() << "Failed to create lendborrow table: " << query.lastError();
-    }
+    createTables();
     notifyLendBorrow();
 
     // Displays the data of userrec to scrollArea
     displayStatement();
+    showAvailableBalance();
 }
 
 Home::~Home()
@@ -58,11 +52,44 @@ Home::~Home()
     delete ui;
 }
 
+void Home::createTables(){
+    // Creates table lendBorrow if it is missing
+    QSqlQuery query;
+    if (query.exec("CREATE TABLE IF NOT EXISTS lendBorrow (id INTEGER PRIMARY KEY AUTOINCREMENT, amount TEXT, description TEXT, tag TEXT)")) {
+        qDebug() << "Table created successfully";
+    } else {
+        qDebug() << "Failed to create lendborrow table: " << query.lastError();
+    }
 
+    // Creates table userrec if it is missing
+    if (query.exec("CREATE TABLE IF NOT EXISTS userrec (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT, description TEXT, amount TEXT, timestamp DEFAULT CURRENT_TIMESTAMP, paymode TEXT)")) {
+        qDebug() << "Table created successfully";
+    } else {
+        qDebug() << "Failed to create userrec table: " << query.lastError();
+    }
+
+    // Creates table balance if it is missing
+    if (query.exec("CREATE TABLE IF NOT EXISTS balance (id INTEGER PRIMARY KEY AUTOINCREMENT, balance REAL)")) {
+        query.prepare("INSERT INTO balance (balance, id) VALUES (0.0, 1)");
+        if(!query.exec()){
+            qDebug()<<"Query not executed";
+        }
+        qDebug() << "Table created successfully";
+    } else {
+        qDebug() << "Failed to create balance table: " << query.lastError();
+    }
+
+    // Creates table capital if it is missing
+    if (query.exec("CREATE TABLE IF NOT EXISTS capital (id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL, month INTEGER, year INTEGER)")) {
+        qDebug() << "Table created successfully";
+    } else {
+        qDebug() << "Failed to create capital table: " << query.lastError();
+    }
+}
 
 void Home::displayStatement() {
-    // Query to select id, description, amount, and category from the table userrec
-    QSqlQuery query("SELECT id, description, amount, timestamp FROM userrec ORDER BY timestamp DESC LIMIT 15");
+    // Query to select id, description, amount, timestamp, and category from the table userrec
+    QSqlQuery query("SELECT id, description, amount, timestamp, category FROM userrec ORDER BY timestamp DESC LIMIT 15");
 
     // Create a new widget to act as the container for the layout
     QWidget *container = new QWidget;
@@ -81,6 +108,7 @@ void Home::displayStatement() {
         QString description = query.value(1).toString();
         QVariant amount = query.value(2);
         QString timestampUTC = query.value(3).toString();
+        QString category = query.value(4).toString(); // Assuming category is in the 4th column
 
         // Convert the timestamp from UTC to local time
         QDateTime timestamp = QDateTime::fromString(timestampUTC, "yyyy-MM-dd hh:mm:ss");
@@ -102,15 +130,37 @@ void Home::displayStatement() {
         // Create labels for amount, description, and category
         QLabel* amountS = new QLabel("Rs. " + amount.toString());
         amountS->setStyleSheet("color: black; "
-                                "font: 20pt \"Arial\";");
+                               "font: 20pt \"Arial\";");
         QLabel* descriptionS = new QLabel(description );
         descriptionS->setStyleSheet("color: black; "
-                                     "font: 18pt \"Arial\";");
+                                    "font: 18pt \"Arial\";");
         QLabel* timestampS = new QLabel( timestampLocal);
         timestampS->setStyleSheet("color: gray; font: 12pt \"Arial\";");
 
-        // Create a horizontal layout for description and category
+        // Create a label for the category image
+        QLabel* imageLabel = new QLabel;
+        imageLabel->setFixedSize(30, 30); // Set the size of the image label
+
+        // Set the image according to the category
+        if (category == "food") {
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/food.jpg").scaled(30, 30));
+        } else if (category == "transportation") {
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/transportation.png").scaled(20, 20));
+        } else if (category == "entertainment") {
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/entertainment.png").scaled(20, 20));
+        } else if (category == "health") {
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/entertainment.png").scaled(20, 20));
+        } else if (category == "education") {
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/education.png").scaled(20, 20));
+        } else if (category == "rent") {
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/rent.png").scaled(20, 20));
+        } else if (category == "miscellaneous") {
+        imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/miscellaneous.png").scaled(20, 20));
+        }
+
+        // Create a horizontal layout for image, description, and amount
         QHBoxLayout* descAmtLayout = new QHBoxLayout;
+        descAmtLayout->addWidget(imageLabel);
         descAmtLayout->addWidget(descriptionS);
         descAmtLayout->addStretch(); // Add stretch to push amount to the right
         descAmtLayout->addWidget(amountS);
@@ -154,16 +204,15 @@ void Home::displayStatement() {
     container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // Remove the previous widget if it exists
-        QWidget *oldWidget = ui->scrollArea1->widget();
-        if (oldWidget) {
-            oldWidget->setParent(nullptr);
-            oldWidget->deleteLater();
-        }
+    QWidget *oldWidget = ui->scrollArea1->widget();
+    if (oldWidget) {
+        oldWidget->setParent(nullptr);
+        oldWidget->deleteLater();
+    }
 
-        // Set the new container widget to the scroll area
-        ui->scrollArea1->setWidget(container);
-        ui->scrollArea1->setWidgetResizable(true); // Ensure the scroll area resizes with its contents
-
+    // Set the new container widget to the scroll area
+    ui->scrollArea1->setWidget(container);
+    ui->scrollArea1->setWidgetResizable(true); // Ensure the scroll area resizes with its contents
 }
 
 
@@ -290,6 +339,7 @@ void Home::updateData(int id, const QString &amount, const QString &description,
     if (query.exec()) {
         // Refresh the display
         displayStatement();
+        showAvailableBalance();
     } else {
         // Handle the error
         qDebug() << "Update data failed in home: " << query.lastError();
@@ -315,6 +365,7 @@ void Home::deleteItem(int id) {
                 QMessageBox::information(this, "Deleted", "Item deleted successfully.");
                 notifyLendBorrow(); // Refresh the data
                 Capital::editAvailableBalance(amount, tag);
+                showAvailableBalance();
             } else {
                 QMessageBox::warning(this, "Error", "Failed to delete item.");
             }
@@ -367,7 +418,7 @@ void Home::insertData(int amount, const QString &description, const QString &tag
         if (query.exec()) {
             notifyLendBorrow();  // Update the label after inserting data
             Capital::editAvailableBalance(amount, tag);
-            QMessageBox::information(this, "Success", "Data added successfully");
+            showAvailableBalance();
         } else {
             QMessageBox::critical(this, "Database Error", "Failed to save data: " + query.lastError().text());
         }
@@ -437,32 +488,47 @@ bool Home::validateInput(int &amount, QString &description, QString &category, Q
 
 // Function to insert data into the userrec table
 void Home::insertData(int amount, const QString &description, const QString &category, const QString &payMode) {
+
     QSqlQuery query;
     // Prepare the SQL query to insert data
     query.prepare("INSERT INTO userrec(amount, description, category, paymode) VALUES (:amount, :description, :category, :payMode)");
     query.bindValue(":amount", amount);
     query.bindValue(":description", description);
-    query.bindValue(":category", category);
-    query.bindValue (":payMode", payMode);
+    query.bindValue(":category", category.toLower());
+    query.bindValue (":payMode", payMode.toLower());
 
     // Execute the query and display appropriate message boxes
-    if (query.exec()) {
-        displayStatement();  // Update the label after inserting data
-        QMessageBox::information(this, "Success", "Data added successfully");
-    } else {
-        QMessageBox::critical(this, "Database Error", "Failed to save data: " + query.lastError().text());
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Add", "You spent: Rs."+QString::number(amount)+" on "+description,
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        // Execute the query and display appropriate message boxes
+        if (query.exec()) {
+            displayStatement();  // Update the label after inserting data
+            Capital::editAvailableBalance(amount, "expense");
+            showAvailableBalance();
+        } else {
+            QMessageBox::critical(this, "Database Error", "Failed to save data: " + query.lastError().text());
+        }
     }
 }
 
+void Home::callAvailableBalance(){
+    Home *home = new Home(nullptr); // or pass a valid QWidget pointer as parent
+   home->showAvailableBalance();
+}
+void Home::showAvailableBalance(){
+    double amount = Capital::getAvailableBalance();
+    ui->avBalance->setText(QString::number(amount));
+}
 
 void Home::on_addItemButton_clicked()
 {
     // Checking whether the amount is a number or not
     int amountD= ui->amountAI->text().toInt();
     QString descD = ui->descriptionAI->text();
-    QString catecD = ui->category->currentText().toLower();
-    QString modeD = ui->payMode->currentText().toLower();
-
+    QString catecD = ui->category->currentText();
+    QString modeD = ui->payMode->currentText();
     // Validate the input
     if (!validateInput(amountD, descD, catecD, modeD)) {
         // If validation fails, exit the function
@@ -470,6 +536,5 @@ void Home::on_addItemButton_clicked()
     }
 
     insertData(amountD, descD, catecD, modeD);
-
 }
 

@@ -35,18 +35,13 @@ public:
 
 private slots:
     void on_homeButton_clicked();
-
     void setupPieChart();
     void onSliceHovered(QPieSlice *slice, bool state);
-
     void setupBarChart();
     void onBarHovered(QBarSet *barSet, bool state, int index);
-
     void on_calendarWidget_currentPageChanged(int year, int month);
-
-    bool displayCapital();
-
-
+    void displayCapital();
+    void showAvailableBalance();
     void on_pushButton_clicked();
 
 private:

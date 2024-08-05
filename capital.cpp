@@ -1,5 +1,6 @@
 #include "capital.h"
 #include "analytics.h"
+#include "home.h"
 #include <QInputDialog>
 #include <QMessageBox>
 
@@ -15,11 +16,8 @@ Capital::Capital(Analytics& analytics) : analyticsRef(analytics) {
     }
 
     QSqlQuery query;
-    query.exec("CREATE TABLE IF NOT EXISTS capital (id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL, month INTEGER, year INTEGER, savings REAL)");
+    query.exec("CREATE TABLE IF NOT EXISTS capital (id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL, month INTEGER, year INTEGER)");
     checkAndInsertCapitalForMonth();
-    getSavings();
-    // addCapital();
-    getTotalLB("borrow");
 }
 
 
@@ -79,6 +77,9 @@ bool Capital::addCapital() {
     double amount = QInputDialog::getDouble(nullptr, "Add Capital", "Enter amount to add to the capital:", 0, 0, 1000000, 2, &ok);
     if (ok) {
         double newCapital = currentCapital + amount;
+        double newBalance = amount + getAvailableBalance();
+        updateAvailableBalance(newBalance);
+
         QSqlQuery query;
         query.prepare("UPDATE capital SET amount = :amount WHERE month = :month AND year = :year");
         query.bindValue(":amount", newCapital);
@@ -97,7 +98,8 @@ bool Capital::addCapital() {
     }
 }
 
-bool Capital::checkAndInsertCapitalForMonth() {
+
+void Capital::checkAndInsertCapitalForMonth() {
     QDate currentDate = QDate::currentDate();
     int currentMonth = currentDate.month();
     int currentYear = currentDate.year();
@@ -110,7 +112,7 @@ bool Capital::checkAndInsertCapitalForMonth() {
     if (query.exec()) {
         if (query.next()) {
             // Capital for the current month is available
-            return true;
+
         } else {
             // Capital for the current month is not available
             bool ok;
@@ -118,15 +120,15 @@ bool Capital::checkAndInsertCapitalForMonth() {
 
             if (ok) {
                 // Insert the capital into the database
-                return insertCapitalForMonth(capital);
+                insertCapitalForMonth(capital);
+                updateAvailableBalance(capital);
+
             } else {
                 QMessageBox::critical(nullptr, "Error", "Please enter a valid capital amount.");
-                return false;
             }
         }
     } else {
         qDebug() << "Failed to check existing capital records:" << query.lastError();
-        return false;
     }
 }
 
@@ -146,51 +148,6 @@ double Capital::getCapital(int month, int year) {
         return 0.0;
     }
 }
-
-// Function to get the savings for the current month and year
-double Capital::getSavings() {
-    QDate currentDate = QDate::currentDate();
-    int month = currentDate.month();
-    int year = currentDate.year();
-
-    double totalExpense = Capital::getTotalExpense(year, month);
-    double capital = Capital::getCapital(month, year);
-    double savings = capital - totalExpense;
-
-    QSqlQuery query;
-    query.prepare("SELECT COUNT(*) FROM capital WHERE month = :month AND year = :year");
-    query.bindValue(":month", month);
-    query.bindValue(":year", year);
-
-    if (!query.exec()) {
-        qDebug() << "Error checking existing record:" << query.lastError();
-        return 0;
-    }
-
-    query.next();
-    int count = query.value(0).toInt();
-
-    if (count == 0) {
-        // No record for this month, insert the capital
-        query.prepare("INSERT INTO capital (month, year, savings) VALUES (:month, :year, :savings)");
-    } else {
-        // Record already exists, update the savings
-        query.prepare("UPDATE capital SET savings = :savings WHERE month = :month AND year = :year");
-    }
-
-    query.bindValue(":month", month);
-    query.bindValue(":year", year);
-    query.bindValue(":savings", savings);
-
-    if (query.exec()) {
-        qDebug() << "Savings for the month updated successfully.";
-        return savings;
-    } else {
-        qDebug() << "Failed to update savings:" << query.lastError();
-        return 0;
-    }
-}
-
 
 
 // Get the total expense from the userrec table
@@ -243,6 +200,7 @@ double Capital::getExpensePercent(const QString &category, int year, int month) 
     return percentage;
 }
 
+
 // Get the total lend,borrow amount from the lendboorow table
 double Capital::getTotalLB(const QString &tag) {
     QSqlQuery query;
@@ -258,9 +216,9 @@ double Capital::getTotalLB(const QString &tag) {
     while (query.next()) {
         totalLend += query.value(0).toDouble();
     }
-    qDebug()<<"Total Lend:"<<totalLend;
     return totalLend;
 }
+
 
 double Capital::getAvailableBalance(){
     QSqlQuery query;
@@ -292,18 +250,20 @@ double Capital::editAvailableBalance(double amount, const QString &tag){
     else if(tag=="borrowR"){
         availableBalance -= amount;
     }
+    else if(tag=="expense"){
+        availableBalance -= amount;
+    }
     updateAvailableBalance(availableBalance);
 }
 
-bool Capital::updateAvailableBalance(double newBalance){
+void Capital::updateAvailableBalance(double newBalance){
         QSqlQuery query;
         query.prepare("UPDATE balance SET balance = :balance WHERE id =1 ");
         query.bindValue(":balance", newBalance);
         if (query.exec()) {
-                qDebug() << newBalance<< "Balance for the month inserted successfully.";
-                return true;
+                qDebug()<< "Balance for the month inserted successfully.";
+                Home::callAvailableBalance();
             } else {
-                qDebug() << "Failed to insert balance:" << query.lastError();
-                return false;
+                qDebug()<< "Failed to insert balance:" << query.lastError();
             }
 }
