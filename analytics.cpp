@@ -1,13 +1,13 @@
-#include "analytics.h"
 #include "ui_analytics.h"
-#include "home.h" // Include home.h here
+#include "analytics.h"
+#include "home.h"
+#include "capital.h"
 
 Analytics::Analytics(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Analytics)
 {
     ui->setupUi(this);
-
     // Hide the title bar and borders
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 
@@ -24,26 +24,19 @@ Analytics::Analytics(QWidget *parent)
     db.open();
 
     if (!db.open()) {
-        qDebug() << "Failed to connect to database: " << db.lastError();
+        qDebug() << "Failed to connect to database analytics: " << db.lastError();
         return;
     }
 
     QDate currentDate = QDate::currentDate();
     selectedYear = currentDate.year();
     selectedMonth = currentDate.month();
-
+    displayCapital();
+    displayLB();
     setupPieChart();
     setupBarChart();
 }
-// Helper function to get month names up to four months before the current month
-QStringList getLastFourMonths() {
-    QStringList monthNames;
-    QDate currentDate = QDate::currentDate();
-    for (int i = 0; i < 5; ++i) {
-        monthNames.prepend(currentDate.addMonths(-i).toString("MMMM"));
-    }
-    return monthNames;
-}
+
 
 
 Analytics::~Analytics()
@@ -62,55 +55,27 @@ void Analytics::on_homeButton_clicked()
 }
 
 
-// Get the total expense from the userrec table
-double Analytics::getTotalExpense(int year, int month) {
-    QSqlQuery query;
-    query.prepare("SELECT SUM(amount) FROM userrec WHERE "
-                  "strftime('%Y', timestamp) = :year AND strftime('%m', timestamp) = :month");
-    query.bindValue(":year", QString::number(year));
-    query.bindValue(":month", QString("%1").arg(month, 2, 10, QChar('0')));  // Format month as two digits
-
-    if (!query.exec()) {
-        qDebug() << "Error executing query:" << query.lastError();
-        return 0.0;
+// Helper function to get month names up to four months before the current month
+QStringList getLastFourMonths() {
+    QStringList monthNames;
+    QDate currentDate = QDate::currentDate();
+    for (int i = 1; i < 6; ++i) {
+        monthNames.prepend(currentDate.addMonths(-i).toString("MMMM"));
     }
-
-    double totalExpense = 0.0;
-    if (query.next()) {
-        totalExpense = query.value(0).toDouble();
-    }
-    qDebug()<<"Total Expense:"<<totalExpense;
-    return totalExpense;
+    return monthNames;
 }
 
 
-// Get the percentage of expenses for a specific category
-double Analytics::getExpensePercent(const QString &category, int year, int month) {
-    QSqlQuery query;
-    query.prepare("SELECT amount FROM userrec WHERE category = :category AND "
-                  "strftime('%Y', timestamp) = :year AND strftime('%m', timestamp) = :month");
-    query.bindValue(":category", category);
-    query.bindValue(":year", QString::number(year));
-    query.bindValue(":month", QString("%1").arg(month, 2, 10, QChar('0')));  // Format month as two digits
-
-    if (!query.exec()) {
-        qDebug() << "Error executing query:" << query.lastError();
-        return 0.0;
+// Helper function to get the expense data for the last four months
+QList<double> getLastFourMonthsData() {
+    QList<double> expenses;
+    QDate currentDate = QDate::currentDate();
+    for (int i = 1; i < 6; ++i) {
+        QDate date = currentDate.addMonths(-i);
+        double expense = Capital::getTotalExpense(date.year(), date.month());
+        expenses.prepend(expense);
     }
-
-    double categoryAmount = 0.0;
-    while (query.next()) {
-        categoryAmount += query.value(0).toDouble();
-    }
-
-    // Calculate the percentage of the category expense relative to the total expense
-    double totalExpense = getTotalExpense(year, month);
-    double percentage = 0.0;
-    if (totalExpense > 0) {
-        percentage = (categoryAmount / totalExpense) * 100;
-    }
-
-    return percentage;
+    return expenses;
 }
 
 
@@ -121,30 +86,29 @@ void Analytics::setupPieChart()
     series->setHoleSize(0.3);
 
     // Append slices and set colors
-    double foodExpense = getExpensePercent("food", selectedYear, selectedMonth);
-    qDebug() << foodExpense;
+    double foodExpense = Capital::getExpensePercent("food", selectedYear, selectedMonth);
     QPieSlice *foodSlice = series->append("Food", foodExpense);
     foodSlice->setColor(QColor(0, 168, 107));
 
-    double rentExpense = getExpensePercent("rent", selectedYear, selectedMonth);
+    double rentExpense = Capital::getExpensePercent("rent", selectedYear, selectedMonth);
     QPieSlice *rentSlice = series->append("Rent", rentExpense);
     rentSlice->setColor(QColor(15, 82, 186));
 
-    double educationExpense = getExpensePercent("education", selectedYear, selectedMonth);
+    double educationExpense = Capital::getExpensePercent("education", selectedYear, selectedMonth);
     QPieSlice *educationSlice = series->append("Education", educationExpense);
     educationSlice->setColor(QColor(0, 128, 255));
 
-    double healthExpense = getExpensePercent("health", selectedYear, selectedMonth);
+    double healthExpense = Capital::getExpensePercent("health", selectedYear, selectedMonth);
     QPieSlice *healthSlice = series->append("Health", healthExpense);
     healthSlice->setColor(QColor(210, 31, 60));
 
-    double entertainmentExpense = getExpensePercent("entertainment", selectedYear, selectedMonth);
+    double entertainmentExpense = Capital::getExpensePercent("entertainment", selectedYear, selectedMonth);
     QPieSlice *entertainmentSlice = series->append("Entertainment", entertainmentExpense);
     entertainmentSlice->setColor(QColor(239, 130, 13));
 
-    double miscellaneousExpense = getExpensePercent("miscellaneous", selectedYear, selectedMonth);
-    QPieSlice *miscellaneousSlice = series->append("Miscellaneous", miscellaneousExpense);
-    miscellaneousSlice->setColor(QColor(100, 108, 17));
+    double miscallaneousExpense = Capital::getExpensePercent("miscallaneous", selectedYear, selectedMonth);
+    QPieSlice *miscallaneousSlice = series->append("Miscallaneous", miscallaneousExpense);
+    miscallaneousSlice->setColor(QColor(100, 108, 17));
 
     // Connect the hovered signal to the slot
     connect(series, &QPieSeries::hovered, this, &Analytics::onSliceHovered);
@@ -184,113 +148,6 @@ void Analytics::setupPieChart()
 }
 
 
-void Analytics::setupBarChart()
-{
-    // // Create the bar series
-    // QBarSeries *series = new QBarSeries();
-    // QBarSet *set_1 = new QBarSet("Shubham is Great");
-    // set_1->append(8400);
-    // set_1->append(9000);
-    // set_1->append(7234);
-    // set_1->append(8000);
-    // set_1->append(10000);
-    // series->append(set_1);
-
-    // Create the bar series
-    QBarSeries *series = new QBarSeries();
-
-    // Get the last four months
-    QStringList subjectNames = getLastFourMonths();
-
-    // Create individual bar sets for each month
-    for (int i = 0; i < subjectNames.size(); ++i) {
-        QBarSet *set = new QBarSet(subjectNames.at(i));
-        // Append a single value to each bar set
-        if (i == 0) {
-            set->append(8400);
-        } else if (i == 1) {
-            set->append(9000);
-        } else if (i == 2) {
-            set->append(7234);
-        } else if (i == 3) {
-            set->append(8000);
-        }
-        // Append each bar set to the series
-        series->append(set);
-    }
-
-    // Create an additional bar set for the last value
-    QBarSet *set_5 = new QBarSet(subjectNames.at(0));
-    set_5->append(10000);
-    series->append(set_5);
-
-    // Adjust the bar width to create space between the sets
-    series->setBarWidth(1); // Adjust this value to create the desired margin
-
-    // Set colors for each bar set if desired
-    for (int i = 0; i < series->count(); ++i) {
-        QBarSet *set = series->barSets().at(i);
-        if (i == 0) {
-            set->setColor(QColor(100, 150, 17));
-        } else if (i == 1) {
-            set->setColor(QColor(200, 100, 50));
-        } else if (i == 2) {
-            set->setColor(QColor(50, 100, 200));
-        } else if (i == 3) {
-            set->setColor(QColor(150, 50, 100));
-        } else if (i == 4) {
-            set->setColor(QColor(100, 50, 150));
-        }
-    }
-
-    // Connect the hovered signal of each bar within the bar set
-    auto connectHoveredSignal = [this](QBarSet* set) {
-        for (int i = 0; i < set->count(); ++i) {
-            connect(set, &QBarSet::hovered, this, [this, set, i](bool state) {
-                onBarHovered(set, state, i);
-            });
-        }
-    };
-
-    for (int i = 0; i < series->count(); ++i) {
-        QBarSet *set = series->barSets().at(i);
-        connectHoveredSignal(set);
-    }
-
-    // Create the chart
-    QChart *chart = new QChart();
-    chart->addSeries(series);
-    chart->setTitle("Monthly Expenditure");
-    chart->setAnimationOptions(QChart::SeriesAnimations);
-
-    // Set up the X axis
-    QBarCategoryAxis *axisX = new QBarCategoryAxis();
-    axisX->append(subjectNames);
-    chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
-
-    // Set up the Y axis
-    QValueAxis *axisY = new QValueAxis();
-    axisY->setRange(0, 15000);
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
-
-    // Set up the legend
-    chart->legend()->setVisible(true);
-    chart->legend()->setAlignment(Qt::AlignBottom);
-
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-
-    chartView->resize(1200, 1000); // Adjust width and height as needed
-
-    // Add the chart view to an existing layout in the UI
-    QVBoxLayout *layout = new QVBoxLayout();
-    layout->addWidget(chartView);
-    ui->barChartWidget->setLayout(layout);
-}
-
-
 void Analytics::onSliceHovered(QPieSlice *slice, bool state)
 {
     // Explode the slice on hover
@@ -310,6 +167,65 @@ void Analytics::onSliceHovered(QPieSlice *slice, bool state)
 }
 
 
+void Analytics::setupBarChart()
+{
+    // Create the bar series
+    QBarSeries *series = new QBarSeries();
+
+    // Get the last four months and their data
+    QStringList subjectNames = getLastFourMonths();
+    QList<double> dataValues = getLastFourMonthsData();
+
+    // Create a single bar set for the last four months
+    QBarSet *set = new QBarSet("Monthly Expenditure");
+
+    // Append the dynamic values to the bar set
+    for (double value : dataValues) {
+        set->append(value);
+    }
+    series->append(set);
+
+    // Create the chart
+    QChart *chart = new QChart();
+    chart->addSeries(series);
+    chart->setTitle("Monthly Expenditure");
+    chart->setAnimationOptions(QChart::SeriesAnimations);
+
+    // Set up the X axis
+    QBarCategoryAxis *axisX = new QBarCategoryAxis();
+    axisX->append(subjectNames);
+    chart->addAxis(axisX, Qt::AlignBottom);
+    series->attachAxis(axisX);
+
+    // Set up the Y axis
+    QValueAxis *axisY = new QValueAxis();
+    axisY->setRange(0, 15000); // Adjust this range as necessary
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisY);
+
+    // Set up the legend
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
+
+    QChartView *chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+
+    chartView->resize(1200, 1000); // Adjust width and height as needed
+
+    // Create a widget to hold the layout
+    QWidget *chartContainer = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(chartContainer);
+    layout->addWidget(chartView);
+
+    // Apply the stylesheet to set the background color
+    chartContainer->setStyleSheet("background-color: #f0f0f0;"); // Change to your desired color
+
+    // Add the chart container to an existing layout in the UI
+    ui->barChartWidget->setLayout(new QVBoxLayout());
+    ui->barChartWidget->layout()->addWidget(chartContainer);
+}
+
+
 void Analytics::onBarHovered(QBarSet *barSet, bool state, int index)
 {
     if (state)
@@ -325,18 +241,42 @@ void Analytics::onBarHovered(QBarSet *barSet, bool state, int index)
 }
 
 
+
+bool Analytics::displayCapital(){
+    double amount = Capital::getCapital(selectedMonth,selectedYear);
+    // Convert the double to QString
+    QString amountString = QString::number(amount);
+    // Set the text of the QLabel
+    ui->capitalDisplay->setText(amountString);
+}
+
+bool Analytics::displayLB(){
+    double amountL = Capital::getTotalLB("lend");
+    double amountB = Capital::getTotalLB("borrow");
+    // Convert the double to QString
+    QString amountLString = QString::number(amountL);
+    QString amountBString = QString::number(amountB);
+    // Set the text of the QLabel
+    ui->lendDisplay->setText(amountLString);
+    ui->borrowDisplay->setText(amountBString);
+}
+
 // Function to get the selected month and year in the calender
 void Analytics::on_calendarWidget_currentPageChanged(int year, int month)
 {
-    qDebug() << "selected month" << month;
-    qDebug() << "selected year" << year;
-
     // Store the selected year and month
     selectedYear = year;
     selectedMonth = month;
 
     // Update the pie chart
     setupPieChart();
+    displayCapital();
 }
 
+
+
+void Analytics::on_pushButton_clicked()
+{
+    Capital::addCapital();
+}
 

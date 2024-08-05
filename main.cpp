@@ -9,12 +9,14 @@
 #include <QWidget>
 #include <QFont>
 
-
+#include "capital.h"
+#include "analytics.h"
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow w;
     Home *homeWindow = new Home();
+    static Analytics analytics; // Create an Analytics object
 
     // Load the splash screen image from resources
     QPixmap pixmap(":/splash/logo.jpeg");
@@ -57,9 +59,10 @@ int main(int argc, char *argv[])
 
     // Show the home window after the splash screen is closed
     QTimer::singleShot(1000, [homeWindow]() {
-        homeWindow->showFullScreen
-            ();
+        homeWindow->showFullScreen();
+        Capital capital(analytics);
     });
+
 
     return app.exec();
 }

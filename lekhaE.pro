@@ -10,12 +10,14 @@ CONFIG += c++17
 
 SOURCES += \
     analytics.cpp \
+    capital.cpp \
     home.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     analytics.h \
+    capital.h \
     home.h \
     mainwindow.h
 

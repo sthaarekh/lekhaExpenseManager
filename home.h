@@ -46,23 +46,22 @@ private slots:
 
 
 
+    void on_addItemButton_clicked();
+
 private:
     Ui::Home *ui;
     QMap<QFrame*, int> frameToIdMap;
     Analytics *analyticsWindow;
     QSqlDatabase db;
     bool validateInput(QString amount, QString description);
-    bool validateInput(QLineEdit &amountEdit, QLineEdit &descriptionEdit, QLineEdit &categoryEdit);
+    bool validateInput(int &amount, QString &description, QString &category, QString &payMode);
+    void insertData(int amount, const QString &description, const QString &category, const QString &payMode);
     void insertData(int amount, const QString &description, const QString &tag);
     void displayStatement();
     void notifyLendBorrow();
     void updateData(int id, const QString &amount, const QString &description, const QString &category);
-    void showEditDialog(int id);
     void deleteItem();
 
-
-protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
 };
 
 

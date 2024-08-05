@@ -18,6 +18,7 @@
 #include <QVBoxLayout>
 #include <QToolTip>
 #include <QDate>
+
 class Home;
 namespace Ui {
 class Analytics;
@@ -29,19 +30,24 @@ class Analytics : public QMainWindow
 
 public:
     explicit Analytics(QWidget *parent = nullptr);
+    bool displayLB();
     ~Analytics();
 
 private slots:
     void on_homeButton_clicked();
-    void setupPieChart();
-    void setupBarChart();
-    void onSliceHovered(QPieSlice *slice, bool state);
-    void onBarHovered(QBarSet *barSet, bool state, int index);
-    double getExpensePercent(const QString &category, int year, int month);
-    double getTotalExpense(int year, int month);
 
+    void setupPieChart();
+    void onSliceHovered(QPieSlice *slice, bool state);
+
+    void setupBarChart();
+    void onBarHovered(QBarSet *barSet, bool state, int index);
 
     void on_calendarWidget_currentPageChanged(int year, int month);
+
+    bool displayCapital();
+
+
+    void on_pushButton_clicked();
 
 private:
     Ui::Analytics *ui;

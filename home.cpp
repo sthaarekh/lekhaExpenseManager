@@ -1,6 +1,6 @@
 #include "home.h"
 #include "ui_home.h"
-
+#include "capital.h"
 
 Home::Home(QWidget *parent)
     :QMainWindow(parent)
@@ -16,27 +16,27 @@ Home::Home(QWidget *parent)
     // Disable the window's resizing functionality
     this->setFixedSize(this->width(), this->height());
 
-    ui->category->addItem("Fooding");
+    ui->category->addItem("Food");
     ui->category->addItem("Rent");
     ui->category->addItem("Transportation");
     ui->category->addItem("Education");
     ui->category->addItem("Clothing");
     ui->category->addItem("Health");
     ui->category->addItem("Miscallaneous");
-    ui->comboBox_2->addItem("Self");
-    ui->comboBox_2->addItem("Borrowed");
+    ui->payMode->addItem("Self");
+    ui->payMode->addItem("Borrow");
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db"); // SQLite database location
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb-2.db"); // SQLite database location
     db.open();
 
     // Error message if the connection to the database fails
     if (!db.open()) {
-        qDebug() << "Failed to connect to database: " << db.lastError();
+        qDebug() << "Failed to connect to database home: " << db.lastError();
         return;
     }
 
@@ -45,7 +45,7 @@ Home::Home(QWidget *parent)
     if (query.exec("CREATE TABLE IF NOT EXISTS lendBorrow (id INTEGER PRIMARY KEY AUTOINCREMENT, amount TEXT, description TEXT, tag TEXT)")) {
         qDebug() << "Table created successfully";
     } else {
-        qDebug() << "Failed to create table: " << query.lastError();
+        qDebug() << "Failed to create lendborrow table: " << query.lastError();
     }
     notifyLendBorrow();
 
@@ -59,146 +59,116 @@ Home::~Home()
 }
 
 
-// Function to validate the input
-bool Home::validateInput(QLineEdit &amountEdit, QLineEdit &descriptionEdit, QLineEdit &categoryEdit) {
-    bool ok;
-    // Checking whether the amount is a number or not
-    int amount = amountEdit.text().toInt(&ok);
-    if (!ok) {
-        QMessageBox::critical(this, "Invalid Input", "Invalid amount. Please enter a numeric value.");
-        return false;
-    }
-    QString description = descriptionEdit.text();
-    QString category = categoryEdit.text();
-    if (description.length() < 3 || category.length() < 3) {
-        // Show an error message or handle the condition appropriately
-        QMessageBox::warning(this, "Input Error", "Description and category must be at least 3 letters long.");
-        return false;
-    }
-    return true;
-}
 
 void Home::displayStatement() {
-    QSqlQuery query("SELECT id, description, amount, category FROM userrec");
+    // Query to select id, description, amount, and category from the table userrec
+    QSqlQuery query("SELECT id, description, amount, timestamp FROM userrec ORDER BY timestamp DESC LIMIT 15");
 
+    // Create a new widget to act as the container for the layout
     QWidget *container = new QWidget;
+
+    // Create a new vertical layout for the container
     QVBoxLayout* layout = new QVBoxLayout(container);
+
+    // Create a horizontal layout to hold 3 frames in each row
     QHBoxLayout* rowLayout = new QHBoxLayout;
+
     int frameCount = 0;
 
+    // Fetch data and create labels dynamically
     while (query.next()) {
-        int id = query.value(0).toInt();
+
         QString description = query.value(1).toString();
         QVariant amount = query.value(2);
-        QString category = query.value(3).toString();
+        QString timestampUTC = query.value(3).toString();
 
-        QFrame* lbFrame = new QFrame;
-        lbFrame->setStyleSheet("background-color: #CCD8C7; border-radius: 10px;");
-        lbFrame->setFixedWidth(170);
-        lbFrame->setFixedHeight(140);
+        // Convert the timestamp from UTC to local time
+        QDateTime timestamp = QDateTime::fromString(timestampUTC, "yyyy-MM-dd hh:mm:ss");
+        timestamp.setTimeSpec(Qt::UTC);
+        timestamp = timestamp.toLocalTime();
+        // To use 12-hour time format with am/pm marker
+        QString timestampLocal = timestamp.toString("MM-dd hh:mm AP");
 
-        QVBoxLayout* lbLayout = new QVBoxLayout(lbFrame);
+        // To create a new lbFrame
+        QFrame* SFrame = new QFrame;
 
-        QLabel* amountLB = new QLabel("Rs. " + amount.toString());
-        amountLB->setStyleSheet("color: black; font: 40pt \"Lucida Grande\";");
-        QLabel* descriptionLB = new QLabel(description);
-        descriptionLB->setStyleSheet("color: black; font: 24pt \"Comic Sans MS\";");
-        QLabel* categoryLB = new QLabel(category);
-        categoryLB->setStyleSheet("color: black; font: 18pt \"Arial\";");
+        // To Set a fixed width and height for the frame
+        SFrame->setFixedWidth(1400);
+        SFrame->setFixedHeight(100);
 
+        // Create a new vertical layout for lbFrame
+        QVBoxLayout* lbLayout = new QVBoxLayout(SFrame);
+
+        // Create labels for amount, description, and category
+        QLabel* amountS = new QLabel("Rs. " + amount.toString());
+        amountS->setStyleSheet("color: black; "
+                                "font: 20pt \"Arial\";");
+        QLabel* descriptionS = new QLabel(description );
+        descriptionS->setStyleSheet("color: black; "
+                                     "font: 18pt \"Arial\";");
+        QLabel* timestampS = new QLabel( timestampLocal);
+        timestampS->setStyleSheet("color: gray; font: 12pt \"Arial\";");
+
+        // Create a horizontal layout for description and category
+        QHBoxLayout* descAmtLayout = new QHBoxLayout;
+        descAmtLayout->addWidget(descriptionS);
+        descAmtLayout->addStretch(); // Add stretch to push amount to the right
+        descAmtLayout->addWidget(amountS);
+
+        // Create a line to separate amount, description, and category
         QFrame* line = new QFrame;
-        line->setFrameShape(QFrame::HLine);
-        line->setFixedHeight(1);
+        line->setFrameShape(QFrame::HLine); // Set the frame shape to horizontal line
+        line->setFixedHeight(1); // Set the fixed height of the line to 1 pixel
         line->setStyleSheet("background-color: black;");
 
-        lbLayout->addWidget(amountLB);
+        // Add labels and line to lbLayout
+        lbLayout->addLayout(descAmtLayout);
+        lbLayout->addWidget(timestampS);
         lbLayout->addWidget(line);
-        lbLayout->addWidget(descriptionLB);
-        lbLayout->addWidget(categoryLB);
 
-        rowLayout->addWidget(lbFrame);
+        // Add the lbFrame to the row layout
+        rowLayout->addWidget(SFrame);
+
         frameCount++;
 
-        if (frameCount == 3) {
+        if (frameCount == 1) {
             layout->addLayout(rowLayout);
             rowLayout = new QHBoxLayout;
             frameCount = 0;
         }
-
-        // Connect the lbFrame click event to show the EditDialog
-        lbFrame->installEventFilter(this);
-        frameToIdMap[lbFrame] = id;
     }
 
     if (frameCount > 0) {
+        // Add spacer to push items to the left
         rowLayout->addStretch();
         layout->addLayout(rowLayout);
     }
 
+    // Add a vertical spacer to the layout
     layout->addStretch();
+
+    // Set the layout to the container widget
     container->setLayout(layout);
+
+    // Ensure the container resizes with its contents
     container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    QWidget *oldWidget = ui->scrollArea1->widget();
-    if (oldWidget) {
-        oldWidget->setParent(nullptr);
-        oldWidget->deleteLater();
-    }
-
-    ui->scrollArea1->setWidget(container);
-    ui->scrollArea1->setWidgetResizable(true);
-}
-
-
-bool Home::eventFilter(QObject *watched, QEvent *event) {
-    if (event->type() == QEvent::MouseButtonRelease) {
-        QFrame *frame = qobject_cast<QFrame*>(watched);
-        if (frame && frameToIdMap.contains(frame)) {
-            int id = frameToIdMap[frame];
-            showEditDialog(id);
-            return true;
+    // Remove the previous widget if it exists
+        QWidget *oldWidget = ui->scrollArea1->widget();
+        if (oldWidget) {
+            oldWidget->setParent(nullptr);
+            oldWidget->deleteLater();
         }
-    }
-    return QObject::eventFilter(watched, event);
+
+        // Set the new container widget to the scroll area
+        ui->scrollArea1->setWidget(container);
+        ui->scrollArea1->setWidgetResizable(true); // Ensure the scroll area resizes with its contents
+
 }
 
-void Home::showEditDialog(int id) {
-    QSqlQuery query;
-    query.prepare("SELECT amount, description, category FROM userrec WHERE id = :id");
-    query.bindValue(":id", id);
-    query.exec();
-    if (query.next()) {
-        QString amount = query.value(0).toString();
-        QString description = query.value(1).toString();
-        QString category = query.value(2).toString();
 
-        QDialog dialog(this);
-        dialog.setWindowTitle("Edit Record");
 
-        QVBoxLayout *layout = new QVBoxLayout(&dialog);
 
-        QLineEdit *amountEdit = new QLineEdit(amount, &dialog);
-        QLineEdit *descriptionEdit = new QLineEdit(description, &dialog);
-        QLineEdit *categoryEdit = new QLineEdit(category, &dialog);
-
-        QPushButton *changeButton = new QPushButton("Change", &dialog);
-        connect(changeButton, &QPushButton::clicked, &dialog, &QDialog::accept);
-
-        layout->addWidget(new QLabel("Amount:"));
-        layout->addWidget(amountEdit);
-        layout->addWidget(new QLabel("Description:"));
-        layout->addWidget(descriptionEdit);
-        layout->addWidget(new QLabel("Category:"));
-        layout->addWidget(categoryEdit);
-        layout->addWidget(changeButton);
-
-        if (dialog.exec() == QDialog::Accepted) {
-            if (validateInput(*amountEdit, *descriptionEdit, *categoryEdit)) {
-                updateData(id, amountEdit->text(), descriptionEdit->text(), categoryEdit->text());
-            }
-        }
-    }
-}
 
 void Home::notifyLendBorrow() {
     // Query to select description and amount from the table lendBorrow
@@ -322,7 +292,7 @@ void Home::updateData(int id, const QString &amount, const QString &description,
         displayStatement();
     } else {
         // Handle the error
-        qDebug() << "Update failed: " << query.lastError();
+        qDebug() << "Update data failed in home: " << query.lastError();
     }
 }
 
@@ -332,14 +302,24 @@ void Home::deleteItem(int id) {
     reply = QMessageBox::question(this, "Delete", "Are you sure you want to delete this item?",
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes) {
-        QSqlQuery deleteQuery;
-        deleteQuery.prepare("DELETE FROM lendBorrow WHERE id = :id");
-        deleteQuery.bindValue(":id", id);
-        if (deleteQuery.exec()) {
-            // QMessageBox::information(this, "Deleted", "Item deleted successfully.");
-            notifyLendBorrow(); // Refresh the data
+        QSqlQuery query;
+        query.prepare("SELECT amount, tag FROM lendBorrow WHERE id = :id");
+        query.bindValue(":id", id);
+        if (query.exec() && query.next()) {
+            double amount = query.value(0).toDouble();
+            QString tag = query.value(1).toString() + "R";
+            QSqlQuery deleteQuery;
+            deleteQuery.prepare("DELETE FROM lendBorrow WHERE id = :id");
+            deleteQuery.bindValue(":id", id);
+            if (deleteQuery.exec()) {
+                QMessageBox::information(this, "Deleted", "Item deleted successfully.");
+                notifyLendBorrow(); // Refresh the data
+                Capital::editAvailableBalance(amount, tag);
+            } else {
+                QMessageBox::warning(this, "Error", "Failed to delete item.");
+            }
         } else {
-            QMessageBox::warning(this, "Error", "Failed to delete item.");
+            QMessageBox::warning(this, "Error", "Failed to retrieve amount.");
         }
     }
 }
@@ -350,7 +330,6 @@ bool Home::validateInput(QString amount, QString description) {
     // Checking whether the amount is a number or not
     int num = amount.toInt(&ok);
     if (!ok) {
-        // qDebug() << amount;
         QMessageBox::critical(this, "Invalid Input", "Invalid amount. Please enter a numeric value.");
         return false;
     }
@@ -366,6 +345,13 @@ bool Home::validateInput(QString amount, QString description) {
 // Function to insert data into the lendBorrow table
 void Home::insertData(int amount, const QString &description, const QString &tag)
 {
+    double availableBalance = Capital::getAvailableBalance();
+
+    if (tag == "lend" && amount > availableBalance) {
+        QMessageBox::critical(this, "Insufficient Balance", "You do not have sufficient balance to lend this amount.");
+        return;
+    }
+
     QSqlQuery query;
     // Prepare the SQL query to insert data
     query.prepare("INSERT INTO lendBorrow(amount, description, tag) VALUES (:amount, :description, :tag)");
@@ -375,18 +361,19 @@ void Home::insertData(int amount, const QString &description, const QString &tag
 
     // Execute the query and display appropriate message boxes
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Add", "Do you want to add"+description+":",
+    reply = QMessageBox::question(this, "Add", "Do you want to add "+description+":"+QString::number(amount),
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes) {
         if (query.exec()) {
-           notifyLendBorrow();  // Update the label after inserting data
+            notifyLendBorrow();  // Update the label after inserting data
+            Capital::editAvailableBalance(amount, tag);
             QMessageBox::information(this, "Success", "Data added successfully");
-
         } else {
             QMessageBox::critical(this, "Database Error", "Failed to save data: " + query.lastError().text());
         }
     }
 }
+
 
 void Home::on_lendButton_clicked()
 {
@@ -428,4 +415,61 @@ void Home::on_analyticsButton_clicked()
 }
 
 
+bool Home::validateInput(int &amount, QString &description, QString &category, QString &payMode) {
+    bool ok;
+    // Checking whether the amount is a number or not
+    amount = ui->amountAI->text().toInt(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "Invalid Input", "Invalid amount. Please enter a numeric value.");
+        return false;
+    }
+    description = ui->descriptionAI->text();
+    category = ui->category->currentText();
+    payMode = ui-> payMode->currentText();
+    if (description.length() < 3 ) {
+        // Show an error message or handle the condition appropriately
+        QMessageBox::warning(this, "Input Error", "Description  must be at least 3 letters long.");
+        return false;
+    }
+    return true;
+}
+
+
+// Function to insert data into the userrec table
+void Home::insertData(int amount, const QString &description, const QString &category, const QString &payMode) {
+    QSqlQuery query;
+    // Prepare the SQL query to insert data
+    query.prepare("INSERT INTO userrec(amount, description, category, paymode) VALUES (:amount, :description, :category, :payMode)");
+    query.bindValue(":amount", amount);
+    query.bindValue(":description", description);
+    query.bindValue(":category", category);
+    query.bindValue (":payMode", payMode);
+
+    // Execute the query and display appropriate message boxes
+    if (query.exec()) {
+        displayStatement();  // Update the label after inserting data
+        QMessageBox::information(this, "Success", "Data added successfully");
+    } else {
+        QMessageBox::critical(this, "Database Error", "Failed to save data: " + query.lastError().text());
+    }
+}
+
+
+void Home::on_addItemButton_clicked()
+{
+    // Checking whether the amount is a number or not
+    int amountD= ui->amountAI->text().toInt();
+    QString descD = ui->descriptionAI->text();
+    QString catecD = ui->category->currentText().toLower();
+    QString modeD = ui->payMode->currentText().toLower();
+
+    // Validate the input
+    if (!validateInput(amountD, descD, catecD, modeD)) {
+        // If validation fails, exit the function
+        return;
+    }
+
+    insertData(amountD, descD, catecD, modeD);
+
+}
 
