@@ -886,8 +886,8 @@ QScrollBar::sub-line:vertical {
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>761</width>
-       <height>441</height>
+       <width>751</width>
+       <height>411</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_10">

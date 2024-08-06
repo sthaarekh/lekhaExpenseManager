@@ -7,12 +7,10 @@
 
 Capital::Capital(Analytics& analytics) : analyticsRef(analytics) {
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb-2.db");
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db");
 
     if (!db.open()) {
         qDebug() << "Error: Connection with database failed in capital";
-    } else {
-        qDebug() << "Database: connection ok";
     }
 
     QSqlQuery query;
@@ -122,7 +120,7 @@ void Capital::checkAndInsertCapitalForMonth() {
                 // Insert the capital into the database
                 insertCapitalForMonth(capital);
                 updateAvailableBalance(capital);
-
+                storeBudgetS(currentMonth, currentYear);
             } else {
                 QMessageBox::critical(nullptr, "Error", "Please enter a valid capital amount.");
             }
@@ -257,13 +255,54 @@ double Capital::editAvailableBalance(double amount, const QString &tag){
 }
 
 void Capital::updateAvailableBalance(double newBalance){
-        QSqlQuery query;
-        query.prepare("UPDATE balance SET balance = :balance WHERE id =1 ");
-        query.bindValue(":balance", newBalance);
-        if (query.exec()) {
-                qDebug()<< "Balance for the month inserted successfully.";
-                Home::callAvailableBalance();
-            } else {
-                qDebug()<< "Failed to insert balance:" << query.lastError();
-            }
+    QSqlQuery query;
+    query.prepare("UPDATE balance SET balance = :balance WHERE id =1 ");
+    query.bindValue(":balance", newBalance);
+    if (query.exec()) {
+        qDebug()<< "Balance for the month inserted successfully.";
+        Home::callAvailableBalance();
+    } else {
+        qDebug()<< "Failed to insert balance:" << query.lastError();
+    }
+}
+
+double Capital::getBudgetS(int year, int month){
+    QSqlQuery query;
+    query.prepare("SELECT budgetS FROM capital WHERE month = :month AND year = :year");
+    query.bindValue(":month", month);
+    query.bindValue(":year", year);
+    if(!query.exec()){
+        qDebug() << "Failed to get savings:" << query.lastError();
+        return 0.0; // Return a default value on error
+    }
+    if (query.next()) {
+        double budgetS = query.value(0).toDouble();
+        return budgetS;
+    } else {
+        qDebug() << "No record found";
+        return 0.0; // Return a default value if no record is found
+    }
+}
+
+
+bool Capital::storeBudgetS(int month, int year){
+    QSqlQuery query;
+    query.prepare("UPDATE capital SET budgetS = :budgetS WHERE month = :month AND year = :year");
+    query.bindValue(":month", month);
+    query.bindValue(":year", year);
+
+    double newBudget = getCapital(month, year) - getTotalExpense(year, month);
+    qDebug()<<newBudget;
+    if(newBudget<0){
+        newBudget = 0.0;
+    }
+
+    query.bindValue(":budgetS", newBudget);
+    if (query.exec()) {
+        qDebug() << "Budget for the month updated successfully.";
+        return true;
+    } else {
+        qDebug() << "Failed to update budget:" << query.lastError();
+        return false;
+    }
 }

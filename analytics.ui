@@ -1642,10 +1642,10 @@ color: rgb(91, 91, 91);</string>
       <widget class="QLabel" name="capitalDisplay">
        <property name="geometry">
         <rect>
-         <x>450</x>
+         <x>390</x>
          <y>20</y>
-         <width>91</width>
-         <height>20</height>
+         <width>131</width>
+         <height>21</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1677,14 +1677,55 @@ color: rgb(220,220, 220);
       <widget class="QPushButton" name="pushButton">
        <property name="geometry">
         <rect>
-         <x>427</x>
-         <y>60</y>
-         <width>80</width>
-         <height>21</height>
+         <x>410</x>
+         <y>50</y>
+         <width>70</width>
+         <height>30</height>
         </rect>
        </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>60</horstretch>
+         <verstretch>120</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>70</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>10</width>
+         <height>12</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Comic Sans MS</family>
+         <pointsize>14</pointsize>
+         <italic>false</italic>
+         <bold>true</bold>
+         <strikeout>false</strikeout>
+         <kerning>true</kerning>
+        </font>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">*{
+border: 1px solid white;
+border-radius:8px;
+background-color:rgb(179,190,98);;
+color:white;
+font: 700 14pt &quot;Comic Sans MS&quot;;
+width: 20px;
+}</string>
+       </property>
        <property name="text">
-        <string>PushButton</string>
+        <string>Add</string>
        </property>
       </widget>
      </widget>
@@ -2279,7 +2320,7 @@ border-radius:14px;
 color: rgb(91, 91, 91);</string>
       </property>
       <property name="text">
-       <string>Savings</string>
+       <string>Budget Surplus</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_4">

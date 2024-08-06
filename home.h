@@ -60,11 +60,10 @@ private:
     void insertData(int amount, const QString &description, const QString &tag);
     void displayStatement();
     void notifyLendBorrow();
-    void updateData(int id, const QString &amount, const QString &description, const QString &category);
     void deleteItem();
     void showAvailableBalance();
     void createTables();
-
+    int currentMonth, currentYear;
 };
 
 

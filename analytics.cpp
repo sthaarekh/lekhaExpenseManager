@@ -20,7 +20,7 @@ Analytics::Analytics(QWidget *parent)
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb-2.db"); // SQLite database location
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db"); // SQLite database location
     db.open();
 
     if (!db.open()) {
@@ -47,7 +47,7 @@ Analytics::~Analytics()
 
 void Analytics::on_homeButton_clicked()
 {
-    this->hide();
+    // this->hide();
     homeWindow = new Home;
     homeWindow->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     homeWindow->setAttribute(Qt::WA_OpaquePaintEvent, true);
@@ -263,6 +263,7 @@ bool Analytics::displayLB(){
     ui->lendDisplay->setText(amountLString);
     ui->borrowDisplay->setText(amountBString);
 }
+
 
 // Function to get the selected month and year in the calender
 void Analytics::on_calendarWidget_currentPageChanged(int year, int month)

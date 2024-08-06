@@ -30,7 +30,7 @@ Home::Home(QWidget *parent)
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb-2.db"); // SQLite database location
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db"); // SQLite database location
     db.open();
 
     // Error message if the connection to the database fails
@@ -38,6 +38,10 @@ Home::Home(QWidget *parent)
         qDebug() << "Failed to connect to database home: " << db.lastError();
         return;
     }
+
+    QDate currentDate = QDate::currentDate();
+    currentMonth = currentDate.month();
+    currentYear = currentDate.year();
 
     createTables();
     notifyLendBorrow();
@@ -55,37 +59,34 @@ Home::~Home()
 void Home::createTables(){
     // Creates table lendBorrow if it is missing
     QSqlQuery query;
-    if (query.exec("CREATE TABLE IF NOT EXISTS lendBorrow (id INTEGER PRIMARY KEY AUTOINCREMENT, amount TEXT, description TEXT, tag TEXT)")) {
-        qDebug() << "Table created successfully";
-    } else {
+    if (!query.exec("CREATE TABLE IF NOT EXISTS lendBorrow (id INTEGER PRIMARY KEY AUTOINCREMENT, amount TEXT, description TEXT, tag TEXT)")) {
         qDebug() << "Failed to create lendborrow table: " << query.lastError();
     }
 
     // Creates table userrec if it is missing
-    if (query.exec("CREATE TABLE IF NOT EXISTS userrec (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT, description TEXT, amount TEXT, timestamp DEFAULT CURRENT_TIMESTAMP, paymode TEXT)")) {
-        qDebug() << "Table created successfully";
-    } else {
+    if (!query.exec("CREATE TABLE IF NOT EXISTS userrec (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT, description TEXT, amount TEXT, timestamp DEFAULT CURRENT_TIMESTAMP, paymode TEXT)")) {
         qDebug() << "Failed to create userrec table: " << query.lastError();
     }
 
     // Creates table balance if it is missing
-    if (query.exec("CREATE TABLE IF NOT EXISTS balance (id INTEGER PRIMARY KEY AUTOINCREMENT, balance REAL)")) {
+    if (!query.exec("CREATE TABLE IF NOT EXISTS balance (id INTEGER PRIMARY KEY AUTOINCREMENT, balance REAL)")) {
+        qDebug() << "Failed to create balance table: " << query.lastError();
+    }else{
         query.prepare("INSERT INTO balance (balance, id) VALUES (0.0, 1)");
         if(!query.exec()){
             qDebug()<<"Query not executed";
         }
-        qDebug() << "Table created successfully";
-    } else {
-        qDebug() << "Failed to create balance table: " << query.lastError();
+        else{
+            qDebug()<<"Query executed sucessfully balance";
+        }
     }
 
     // Creates table capital if it is missing
-    if (query.exec("CREATE TABLE IF NOT EXISTS capital (id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL, month INTEGER, year INTEGER)")) {
-        qDebug() << "Table created successfully";
-    } else {
+    if (!query.exec("CREATE TABLE IF NOT EXISTS capital (id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL, month INTEGER, year INTEGER, budgetS REAL)")) {
         qDebug() << "Failed to create capital table: " << query.lastError();
     }
 }
+
 
 void Home::displayStatement() {
     // Query to select id, description, amount, timestamp, and category from the table userrec
@@ -216,9 +217,6 @@ void Home::displayStatement() {
 }
 
 
-
-
-
 void Home::notifyLendBorrow() {
     // Query to select description and amount from the table lendBorrow
     QSqlQuery query("SELECT id, description, amount, tag FROM lendBorrow");
@@ -329,22 +327,6 @@ void Home::notifyLendBorrow() {
     ui->scrollArea->setWidgetResizable(true); // Ensure the scroll area resizes with its contents
 }
 
-void Home::updateData(int id, const QString &amount, const QString &description, const QString &category) {
-    QSqlQuery query;
-    query.prepare("UPDATE userrec SET amount = :amount, description = :description, category = :category WHERE id = :id");
-    query.bindValue(":amount", amount);
-    query.bindValue(":description", description);
-    query.bindValue(":category", category);
-    query.bindValue(":id", id);
-    if (query.exec()) {
-        // Refresh the display
-        displayStatement();
-        showAvailableBalance();
-    } else {
-        // Handle the error
-        qDebug() << "Update data failed in home: " << query.lastError();
-    }
-}
 
 // Function to deleteitem with the use of id
 void Home::deleteItem(int id) {
@@ -375,6 +357,7 @@ void Home::deleteItem(int id) {
     }
 }
 
+
 // Function to validate the input of lend borrow
 bool Home::validateInput(QString amount, QString description) {
     bool ok;
@@ -392,6 +375,7 @@ bool Home::validateInput(QString amount, QString description) {
     }
     return true;
 }
+
 
 // Function to insert data into the lendBorrow table
 void Home::insertData(int amount, const QString &description, const QString &tag)
@@ -441,6 +425,7 @@ void Home::on_lendButton_clicked()
     insertData(amount.toInt(), desc, tag);
 }
 
+
 void Home::on_borrowButton_clicked()
 {
     QString amount = ui->amountB->text();
@@ -456,12 +441,13 @@ void Home::on_borrowButton_clicked()
     insertData(amount.toInt(), desc, tag);
 }
 
+
 void Home::on_analyticsButton_clicked()
 {
         this->hide();
         analyticsWindow = new Analytics;
         analyticsWindow->show();
-        delete (this);
+        // delete (this);
 
 }
 
@@ -489,6 +475,12 @@ bool Home::validateInput(int &amount, QString &description, QString &category, Q
 // Function to insert data into the userrec table
 void Home::insertData(int amount, const QString &description, const QString &category, const QString &payMode) {
 
+    double availableBalance = Capital::getAvailableBalance();
+    if (amount > availableBalance) {
+        QMessageBox::critical(this, "Insufficient Balance", "You do not have sufficient balance to spend this amount.");
+        return;
+    }
+
     QSqlQuery query;
     // Prepare the SQL query to insert data
     query.prepare("INSERT INTO userrec(amount, description, category, paymode) VALUES (:amount, :description, :category, :payMode)");
@@ -506,12 +498,14 @@ void Home::insertData(int amount, const QString &description, const QString &cat
         if (query.exec()) {
             displayStatement();  // Update the label after inserting data
             Capital::editAvailableBalance(amount, "expense");
-            showAvailableBalance();
+            Capital::storeBudgetS(currentMonth, currentYear);
+            Home::showAvailableBalance();
         } else {
             QMessageBox::critical(this, "Database Error", "Failed to save data: " + query.lastError().text());
         }
     }
 }
+
 
 void Home::callAvailableBalance(){
     Home *home = new Home(nullptr); // or pass a valid QWidget pointer as parent
@@ -521,6 +515,7 @@ void Home::showAvailableBalance(){
     double amount = Capital::getAvailableBalance();
     ui->avBalance->setText(QString::number(amount));
 }
+
 
 void Home::on_addItemButton_clicked()
 {
