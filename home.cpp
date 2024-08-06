@@ -277,7 +277,7 @@ void Home::notifyLendBorrow() {
 
         // Create a delete button
         QPushButton* deleteButton = new QPushButton;
-        deleteButton->setIcon(QIcon("/Users/sthaarekh/Documents/qtLearn/bin.png")); // Set the path to your image file
+        deleteButton->setIcon(QIcon(":/pics/LekhaResources/bin.png")); // Set the path to your image file
         deleteButton->setIconSize(QSize(24, 24)); // Adjust the icon size as needed
         deleteButton->setStyleSheet("color: black; "
                                     "font: 16pt \"Comic Sans MS\";");
