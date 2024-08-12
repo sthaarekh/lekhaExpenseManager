@@ -30,7 +30,7 @@ Home::Home(QWidget *parent)
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db"); // SQLite database location
+    db.setDatabaseName("C:/Programming/project/shubham/database/mydb.db"); // SQLite database location
     db.open();
 
     // Error message if the connection to the database fails
@@ -140,24 +140,25 @@ void Home::displayStatement() {
 
         // Create a label for the category image
         QLabel* imageLabel = new QLabel;
-        imageLabel->setFixedSize(30, 30); // Set the size of the image label
+        imageLabel->setFixedSize(40, 40); // Set the size of the image label
 
         // Set the image according to the category
         if (category == "food") {
-            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/food.jpg").scaled(30, 30));
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/food.png").scaled(40, 40));
         } else if (category == "transportation") {
-            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/transportation.png").scaled(20, 20));
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/train.png").scaled(40, 40));
         } else if (category == "entertainment") {
-            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/entertainment.png").scaled(20, 20));
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/entertainment.png").scaled(40, 40));
         } else if (category == "health") {
-            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/entertainment.png").scaled(20, 20));
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/health.png").scaled(40, 40));
         } else if (category == "education") {
-            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/education.png").scaled(20, 20));
-        } else if (category == "rent") {
-            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/rent.png").scaled(20, 20));
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/education.png").scaled(40, 40));
+        } else if (category == "housing") {
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/house.png").scaled(40, 40));
         } else if (category == "miscellaneous") {
-        imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/miscellaneous.png").scaled(20, 20));
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/shopping.png").scaled(40, 40));
         }
+
 
         // Create a horizontal layout for image, description, and amount
         QHBoxLayout* descAmtLayout = new QHBoxLayout;
@@ -277,7 +278,7 @@ void Home::notifyLendBorrow() {
 
         // Create a delete button
         QPushButton* deleteButton = new QPushButton;
-        deleteButton->setIcon(QIcon(":/pics/LekhaResources/bin.png")); // Set the path to your image file
+        deleteButton->setIcon(QIcon(":/pics/LekhaResources/dustbin.png")); // Set the path to your image file
         deleteButton->setIconSize(QSize(24, 24)); // Adjust the icon size as needed
         deleteButton->setStyleSheet("color: black; "
                                     "font: 16pt \"Comic Sans MS\";");

@@ -20,7 +20,7 @@ Analytics::Analytics(QWidget *parent)
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db"); // SQLite database location
+    db.setDatabaseName("C:/Programming/project/shubham/database/mydb.db"); // SQLite database location
     db.open();
 
     if (!db.open()) {
@@ -34,6 +34,7 @@ Analytics::Analytics(QWidget *parent)
     displayCapital();
     displayLB();
     showAvailableBalance();
+    showBudgetS();
     setupPieChart();
     setupBarChart();
 }
@@ -57,7 +58,7 @@ void Analytics::on_homeButton_clicked()
 
 
 // Helper function to get month names up to four months before the current month
-QStringList getLastFourMonths() {
+QStringList getLastFiveMonths() {
     QStringList monthNames;
     QDate currentDate = QDate::currentDate();
     for (int i = 1; i < 6; ++i) {
@@ -68,7 +69,7 @@ QStringList getLastFourMonths() {
 
 
 // Helper function to get the expense data for the last four months
-QList<double> getLastFourMonthsData() {
+QList<double> getLastFiveMonthsData() {
     QList<double> expenses;
     QDate currentDate = QDate::currentDate();
     for (int i = 1; i < 6; ++i) {
@@ -79,7 +80,64 @@ QList<double> getLastFourMonthsData() {
     return expenses;
 }
 
+QList<double> getLastFiveMonthsBudgets() {
+    QList<double> budgets;
+    QDate currentDate = QDate::currentDate();
+    for (int i = 0; i <= 5; ++i) {
+        QDate date = currentDate.addMonths(-i);
+        double budget = Capital::getBudgetS(date.year(), date.month());
+        budgets.prepend(budget); // Prepend to keep the order from oldest to latest
+    }
+    return budgets;
+}
 
+
+void Analytics::showBudgetS() {
+    QWidget *widget = ui->budgetArea->widget();
+    if (!widget) {
+        qWarning() << "budgetArea widget is null";
+        return;
+    }
+
+    QLayout *layout = widget->layout();
+    if (!layout) {
+        // If no layout exists, create a new one
+        layout = new QVBoxLayout(widget);
+        widget->setLayout(layout);
+    }
+
+    // Clear the existing layout
+    while (layout->count() > 0) {
+        QLayoutItem *item = layout->takeAt(0);
+        if (item->widget()) {
+            delete item->widget();
+        }
+        delete item;
+    }
+    layout->setSpacing(5);
+
+    // Get the month names and budget data
+    QStringList monthNames = getLastFiveMonths();
+    QList<double> budgets = getLastFiveMonthsBudgets();
+
+    // Add the budget information to the layout
+    for (int i = 0; i < 5; ++i) {
+        QLabel *budgetLabel = new QLabel(QString("%1: Rs. %2").arg(monthNames.at(i)).arg(budgets.at(i)), widget);
+        budgetLabel->setStyleSheet("color: black; "
+                                     "font: 16pt \"Comic Sans MS\";");
+        layout->addWidget(budgetLabel);
+
+        QFrame *line = new QFrame(widget);
+        line->setFrameShape(QFrame::HLine);
+        line->setFrameShadow(QFrame::Sunken);
+        layout->addWidget(line);
+    }
+
+    // Update the layout
+    layout->update();
+    widget->updateGeometry();
+    widget->adjustSize();
+}
 void Analytics::setupPieChart()
 {
     // Create the pie series
@@ -178,8 +236,8 @@ void Analytics::setupBarChart()
     QBarSeries *series = new QBarSeries();
 
     // Get the last four months and their data
-    QStringList subjectNames = getLastFourMonths();
-    QList<double> dataValues = getLastFourMonthsData();
+    QStringList subjectNames = getLastFiveMonths();
+    QList<double> dataValues = getLastFiveMonthsData();
 
     // Create a single bar set for the last four months
     QBarSet *set = new QBarSet("Monthly Expenditure");

@@ -184,7 +184,6 @@ background-color:rgb(235,235,235);
      </property>
      <property name="styleSheet">
       <string notr="true">QFrame{
-
 background-color:white;
 border:10px;
 border-radius:14px;
@@ -207,6 +206,9 @@ border-radius:14px;
         <height>441</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
      </widget>
     </widget>
     <widget class="QFrame" name="frame_3">
@@ -219,8 +221,8 @@ border-radius:14px;
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QFrame{
-background-color:white;
+      <string notr="true">QFrame{background-color:white;
+
 border:13px;
 border-radius:14px;
 }</string>
@@ -1614,7 +1616,7 @@ background-color: rgb(197, 197, 197);</string>
       </property>
       <property name="styleSheet">
        <string notr="true">
-background-color: rgb(176, 183, 145);</string>
+background-color: rgb(173, 208, 142);</string>
       </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -2364,7 +2366,7 @@ color: rgb(91, 91, 91);</string>
        <enum>Qt::Horizontal</enum>
       </property>
      </widget>
-     <widget class="QScrollArea" name="scrollArea">
+     <widget class="QScrollArea" name="budgetArea">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -2374,9 +2376,7 @@ color: rgb(91, 91, 91);</string>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">
-background-color: #F7D794;
-border-radius:20px;</string>
+       <string notr="true">border-radius:20px;</string>
       </property>
       <property name="widgetResizable">
        <bool>true</bool>

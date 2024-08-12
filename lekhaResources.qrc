@@ -4,17 +4,20 @@
         <file>logo.jpeg</file>
     </qresource>
     <qresource prefix="/pics">
-        <file>LekhaResources/altclot.png</file>
-        <file>LekhaResources/education.png</file>
-        <file>LekhaResources/entertainment.png</file>
-        <file>LekhaResources/food.jpg</file>
-        <file>LekhaResources/health.png</file>
-        <file>LekhaResources/rent.png</file>
-        <file>LekhaResources/shoppingcart.png</file>
-        <file>LekhaResources/transportation.png</file>
         <file>LekhaResources/resizedImage.png</file>
         <file>LekhaResources/logo3.png</file>
         <file>LekhaResources/448996984_519875650508150_7341444087745771936_n.png</file>
-        <file>LekhaResources/bin.png</file>
+        <file>LekhaResources/add.jpg</file>
+        <file>LekhaResources/borrow.jpg</file>
+        <file>LekhaResources/dustbin.png</file>
+        <file>LekhaResources/food.png</file>
+        <file>LekhaResources/house.png</file>
+        <file>LekhaResources/lend.jpg</file>
+        <file>LekhaResources/power.png</file>
+        <file>LekhaResources/shopping.png</file>
+        <file>LekhaResources/train.png</file>
+        <file>LekhaResources/education.png</file>
+        <file>LekhaResources/entertainment.png</file>
+        <file>LekhaResources/health.png</file>
     </qresource>
 </RCC>

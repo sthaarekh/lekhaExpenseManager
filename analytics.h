@@ -43,6 +43,7 @@ private slots:
     void displayCapital();
     void showAvailableBalance();
     void on_pushButton_clicked();
+    void showBudgetS();
 
 private:
     Ui::Analytics *ui;

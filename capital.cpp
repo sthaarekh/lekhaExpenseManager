@@ -7,8 +7,7 @@
 
 Capital::Capital(Analytics& analytics) : analyticsRef(analytics) {
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaEx/shubham/database/mydb.db");
-
+    db.setDatabaseName("C:/Programming/project/shubham/database/mydb.db");
     if (!db.open()) {
         qDebug() << "Error: Connection with database failed in capital";
     }
