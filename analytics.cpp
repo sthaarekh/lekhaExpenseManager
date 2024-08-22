@@ -20,7 +20,7 @@ Analytics::Analytics(QWidget *parent)
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("C:/Programming/project/shubham/database/mydb.db"); // SQLite database location
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaFinal/database/mydb.db"); // SQLite database location
     db.open();
 
     if (!db.open()) {
@@ -28,7 +28,7 @@ Analytics::Analytics(QWidget *parent)
         return;
     }
 
-    QDate currentDate = QDate::currentDate();
+    currentDate = QDate::currentDate();
     selectedYear = currentDate.year();
     selectedMonth = currentDate.month();
     displayCapital();
@@ -123,7 +123,7 @@ void Analytics::showBudgetS() {
     // Add the budget information to the layout
     for (int i = 0; i < 5; ++i) {
         QLabel *budgetLabel = new QLabel(QString("%1: Rs. %2").arg(monthNames.at(i)).arg(budgets.at(i)), widget);
-        budgetLabel->setStyleSheet("color: black; "
+        budgetLabel->setStyleSheet("color: rgb(91, 91, 91); "
                                      "font: 16pt \"Comic Sans MS\";");
         layout->addWidget(budgetLabel);
 
@@ -138,6 +138,7 @@ void Analytics::showBudgetS() {
     widget->updateGeometry();
     widget->adjustSize();
 }
+
 void Analytics::setupPieChart()
 {
     // Create the pie series
@@ -209,7 +210,6 @@ void Analytics::setupPieChart()
     layout->addWidget(chartView);
     ui->pieChartWidget->setLayout(layout);
 }
-
 
 void Analytics::onSliceHovered(QPieSlice *slice, bool state)
 {
@@ -287,36 +287,21 @@ void Analytics::setupBarChart()
 }
 
 
-void Analytics::onBarHovered(QBarSet *barSet, bool state, int index)
-{
-    if (state)
-    {
-        // Get the value of the specific bar that is hovered
-        QString tooltipText = QString::number(barSet->at(index));
-        QToolTip::showText(QCursor::pos(), tooltipText);
-    }
-    else
-    {
-        QToolTip::hideText(); // Hide tooltip when not hovered
-    }
-}
-
-
-
 void Analytics::displayCapital(){
-    double amount = Capital::getCapital(selectedMonth,selectedYear);
+    double amount = Capital::getCapital(currentDate.month(),currentDate.year());
     // Convert the double to QString
-    QString amountString = QString::number(amount);
+    QString amountString =  "Rs. " + QString::number(amount);
     // Set the text of the QLabel
     ui->capitalDisplay->setText(amountString);
 }
 
-bool Analytics::displayLB(){
+
+void Analytics::displayLB(){
     double amountL = Capital::getTotalLB("lend");
     double amountB = Capital::getTotalLB("borrow");
     // Convert the double to QString
-    QString amountLString = QString::number(amountL);
-    QString amountBString = QString::number(amountB);
+    QString amountLString = "Rs. " + QString::number(amountL);
+    QString amountBString = "Rs. " + QString::number(amountB);
     // Set the text of the QLabel
     ui->lendDisplay->setText(amountLString);
     ui->borrowDisplay->setText(amountBString);
@@ -332,7 +317,6 @@ void Analytics::on_calendarWidget_currentPageChanged(int year, int month)
 
     // Update the pie chart
     setupPieChart();
-    displayCapital();
 }
 
 void Analytics::showAvailableBalance(){
@@ -346,5 +330,17 @@ void Analytics::on_pushButton_clicked()
     Capital::addCapital();
     Analytics::displayCapital();
     Analytics::showAvailableBalance();
+}
+
+
+void Analytics::on_pushButton_4_clicked()
+{
+    // Show a confirmation dialog
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Confirm Exit", "Are you sure you want to exit?",
+                                  QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        QApplication::quit(); // Close the application
+    }
 }
 

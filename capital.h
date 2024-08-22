@@ -21,7 +21,7 @@ public:
     static double getAvailableBalance();
     static bool addCapital();
     static void updateAvailableBalance(double newBalance);
-    static double editAvailableBalance(double amount, const QString &tag);
+    static void editAvailableBalance(double amount, const QString &tag);
     static bool storeBudgetS(int month, int year);
     static double getBudgetS(int year, int month);
 protected slots:

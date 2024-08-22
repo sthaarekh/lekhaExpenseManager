@@ -30,7 +30,7 @@ class Analytics : public QMainWindow
 
 public:
     explicit Analytics(QWidget *parent = nullptr);
-    bool displayLB();
+    void displayLB();
     ~Analytics();
 
 private slots:
@@ -38,12 +38,12 @@ private slots:
     void setupPieChart();
     void onSliceHovered(QPieSlice *slice, bool state);
     void setupBarChart();
-    void onBarHovered(QBarSet *barSet, bool state, int index);
     void on_calendarWidget_currentPageChanged(int year, int month);
     void displayCapital();
     void showAvailableBalance();
     void on_pushButton_clicked();
     void showBudgetS();
+    void on_pushButton_4_clicked();
 
 private:
     Ui::Analytics *ui;
@@ -51,6 +51,7 @@ private:
     QSqlDatabase db;
     int selectedYear;
     int selectedMonth;
+    QDate currentDate;
 };
 
 #endif // ANALYTICS_H

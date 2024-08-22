@@ -30,7 +30,7 @@ Home::Home(QWidget *parent)
 
     // Connecting to the SQLite database
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("C:/Programming/project/shubham/database/mydb.db"); // SQLite database location
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaFinal/database/mydb.db");   // SQLite database location
     db.open();
 
     // Error message if the connection to the database fails
@@ -59,7 +59,7 @@ Home::~Home()
 void Home::createTables(){
     // Creates table lendBorrow if it is missing
     QSqlQuery query;
-    if (!query.exec("CREATE TABLE IF NOT EXISTS lendBorrow (id INTEGER PRIMARY KEY AUTOINCREMENT, amount TEXT, description TEXT, tag TEXT)")) {
+    if (!query.exec("CREATE TABLE IF NOT EXISTS lendBorrow (id INTEGER PRIMARY KEY AUTOINCREMENT, amount TEXT, description TEXT, tag TEXT, time DEFAULT CURRENT_TIMESTAMP)")) {
         qDebug() << "Failed to create lendborrow table: " << query.lastError();
     }
 
@@ -87,10 +87,9 @@ void Home::createTables(){
     }
 }
 
-
 void Home::displayStatement() {
     // Query to select id, description, amount, timestamp, and category from the table userrec
-    QSqlQuery query("SELECT id, description, amount, timestamp, category FROM userrec ORDER BY timestamp DESC LIMIT 15");
+    QSqlQuery query("SELECT id, description, amount, timestamp, category FROM userrec WHERE paymode = 'self' ORDER BY timestamp DESC LIMIT 15");
 
     // Create a new widget to act as the container for the layout
     QWidget *container = new QWidget;
@@ -105,7 +104,6 @@ void Home::displayStatement() {
 
     // Fetch data and create labels dynamically
     while (query.next()) {
-
         QString description = query.value(1).toString();
         QVariant amount = query.value(2);
         QString timestampUTC = query.value(3).toString();
@@ -217,10 +215,11 @@ void Home::displayStatement() {
     ui->scrollArea1->setWidgetResizable(true); // Ensure the scroll area resizes with its contents
 }
 
-
 void Home::notifyLendBorrow() {
     // Query to select description and amount from the table lendBorrow
-    QSqlQuery query("SELECT id, description, amount, tag FROM lendBorrow");
+    QSqlQuery query("SELECT id, description, amount, tag, time FROM lendBorrow");
+    // Query to select id, description, time and amount from the table userrec where paying mode is borrow
+    QSqlQuery query1("SELECT id, description, amount, timestamp, payMode FROM userrec WHERE payMode = 'borrow' ORDER BY timestamp DESC");
 
     // Create a new widget to act as the container for the layout
     QWidget *container = new QWidget;
@@ -231,15 +230,23 @@ void Home::notifyLendBorrow() {
     int row = 0;
     int column = 0;
 
-    // Fetch data and create labels dynamically
+    // Fetch data and create labels dynamically from lendborrow table
     while (query.next()) {
         int id = query.value(0).toInt();
         QString description = query.value(1).toString();
         QVariant amount = query.value(2);
         QString tag = query.value(3).toString();
+        QString timestampUTC = query.value(4).toString();
+
         // Create a new lbFrame
         QFrame* lbFrame = new QFrame;
 
+        QDateTime timestamp = QDateTime::fromString(timestampUTC, "yyyy-MM-dd hh:mm:ss");
+        timestamp.setTimeSpec(Qt::UTC);
+        timestamp = timestamp.toLocalTime();
+
+        // Format to extract only the date
+        QString timestampLocal = timestamp.toString("MM-dd");
 
         // Set a fixed width and height for the frame
         lbFrame->setFixedWidth(170);
@@ -252,23 +259,26 @@ void Home::notifyLendBorrow() {
         QLabel* tagLB;
         if(tag=="lend"){
             tagLB = new QLabel("LEND");
-            lbFrame->setStyleSheet("background-color: rgb(255, 230, 204); "
+            lbFrame->setStyleSheet("background-color: #C7DCA7; "
                                    "border-radius: 10px;");
         }
         else{
             tagLB = new QLabel("BORROW");
-            lbFrame->setStyleSheet("background-color: rgb(255, 200, 204); "
+            lbFrame->setStyleSheet("background-color: #FFC5C5; "
                                    "border-radius: 10px;");
         }
         tagLB->setStyleSheet("color: black; "
-                                "font: 28pt \"Lucida Grande\";");
+                                "font: 28pt \"Avenir Next\";");
 
         QLabel* amountLB = new QLabel("Rs. " + amount.toString());
         amountLB->setStyleSheet("color: grey; "
-                                "font: 28pt \"Lucida Grande\";");
+                                "font: 28pt \"Avenir Next\";");
         QLabel* descriptionLB = new QLabel(description);
         descriptionLB->setStyleSheet("color: black; "
-                                     "font: 24pt \"Comic Sans MS\";");
+                                     "font: 24pt \"Avenir Next\";");
+
+        QLabel* timestampLB = new QLabel( timestampLocal);
+        timestampLB->setStyleSheet("color: gray; font: 18pt \"Avenir Next\";");
 
         // Create a line to separate amount and description
         QFrame* line = new QFrame;
@@ -280,8 +290,6 @@ void Home::notifyLendBorrow() {
         QPushButton* deleteButton = new QPushButton;
         deleteButton->setIcon(QIcon(":/pics/LekhaResources/dustbin.png")); // Set the path to your image file
         deleteButton->setIconSize(QSize(24, 24)); // Adjust the icon size as needed
-        deleteButton->setStyleSheet("color: black; "
-                                    "font: 16pt \"Comic Sans MS\";");
         deleteButton->setCursor(Qt::PointingHandCursor);
         connect(deleteButton, &QPushButton::clicked, this, [=]() { deleteItem(id); });
 
@@ -295,6 +303,7 @@ void Home::notifyLendBorrow() {
         lbLayout->addWidget(line);
         lbLayout->addWidget(amountLB);
         lbLayout->addWidget(descriptionLB);
+        lbLayout->addWidget(timestampLB);
         lbLayout->addLayout(buttonLayout); // Add the button layout instead of the delete button directly
 
         // Add the lbFrame to the grid layout
@@ -305,6 +314,85 @@ void Home::notifyLendBorrow() {
             column = 0;
             row++;
         }
+    }
+
+    // Fetch data and create labels dynamically from userrec with paymode = borrow
+    while (query1.next()) {
+        int id = query1.value(0).toInt();
+        QString description = query1.value(1).toString();
+        QVariant amount = query1.value(2);
+        QString timestampUTC = query1.value(3).toString();
+
+        // Convert the timestamp from UTC to local time
+        QDateTime timestamp = QDateTime::fromString(timestampUTC, "yyyy-MM-dd hh:mm:ss");
+        timestamp.setTimeSpec(Qt::UTC);
+        timestamp = timestamp.toLocalTime();
+        QString timestampLocal = timestamp.toString("MM-dd ");
+
+        // Create a new frame for Borrowed records
+        QFrame* borrowFrame = new QFrame;
+        borrowFrame->setStyleSheet("background-color: #FFC5C5; "
+                                   "border-radius: 10px;");
+        borrowFrame->setFixedWidth(170); //width
+        borrowFrame->setFixedHeight(190); //height
+
+        // Create a new vertical layout for borrowFrame
+        QVBoxLayout* borrowLayout = new QVBoxLayout(borrowFrame);
+
+        // Create labels for amount and description
+        QLabel* amountBorrow = new QLabel("Rs. " + amount.toString());
+        amountBorrow->setStyleSheet("color: grey; "
+                                    "font: 28pt \"Avenir Next\";");
+        QLabel* descriptionBorrow = new QLabel(description);
+        descriptionBorrow->setStyleSheet("color: black; "
+                                         "font: 24pt \"Avenir Next\";");
+
+        // Create a line to separate amount and description
+        QFrame* line = new QFrame;
+        line->setFrameShape(QFrame::HLine);
+        line->setFixedHeight(1);
+        line->setStyleSheet("background-color: black;");
+
+        // Create a horizontal layout for the timestamp
+        QLabel* timestampLabel = new QLabel(timestampLocal);
+        timestampLabel->setStyleSheet("color: gray; font: 12pt \"Arial\";");
+
+        QLabel* tagBorrow = new QLabel("BORROW");
+        tagBorrow->setStyleSheet("color: black; "
+                             "font: 28pt \"Lucida Grande\";");
+
+        // Create a delete button
+        QPushButton* deleteButton = new QPushButton;
+        deleteButton->setIcon(QIcon(":/pics/LekhaResources/dustbin.png"));  // Set the path to your image file
+        deleteButton->setIconSize(QSize(24, 24));                           // Adjust the icon size as needed
+        deleteButton->setCursor(Qt::PointingHandCursor);
+        connect(deleteButton, &QPushButton::clicked, this, [=]() { borrowResolved(id, amount.toDouble()); });
+
+
+        // Create a horizontal layout for the delete button
+        QHBoxLayout* buttonLayout = new QHBoxLayout;
+        buttonLayout->addStretch();
+        buttonLayout->addWidget(deleteButton);
+
+
+        // Add labels, line, and timestamp to borrowLayout
+        borrowLayout->addWidget(tagBorrow);
+        borrowLayout->addWidget(line);
+        borrowLayout->addWidget(amountBorrow);
+        borrowLayout->addWidget(descriptionBorrow);
+        borrowLayout->addWidget(timestampLabel);
+        borrowLayout->addLayout(buttonLayout); // Add the button layout instead of the delete button directly
+
+
+        // Add the borrowFrame to the layout
+        layout->addWidget(borrowFrame, row, column);
+        // Move to the next column
+        column++;
+        if (column == 3) {
+            column = 0;
+            row++;
+        }
+
     }
 
     // Add a vertical spacer to the layout
@@ -331,8 +419,9 @@ void Home::notifyLendBorrow() {
 
 // Function to deleteitem with the use of id
 void Home::deleteItem(int id) {
+    double balance = Capital::getAvailableBalance();
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Delete", "Are you sure you want to delete this item?",
+    reply = QMessageBox::question(this, "Delete", "Are you sure you've cleared the sum?",
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes) {
         QSqlQuery query;
@@ -342,22 +431,64 @@ void Home::deleteItem(int id) {
             double amount = query.value(0).toDouble();
             QString tag = query.value(1).toString() + "R";
             QSqlQuery deleteQuery;
-            deleteQuery.prepare("DELETE FROM lendBorrow WHERE id = :id");
-            deleteQuery.bindValue(":id", id);
-            if (deleteQuery.exec()) {
-                QMessageBox::information(this, "Deleted", "Item deleted successfully.");
-                notifyLendBorrow(); // Refresh the data
-                Capital::editAvailableBalance(amount, tag);
-                showAvailableBalance();
-            } else {
-                QMessageBox::warning(this, "Error", "Failed to delete item.");
+            if(balance >= amount && tag == "borrowR" || tag =="lendR"){
+                deleteQuery.prepare("DELETE FROM lendBorrow WHERE id = :id");
+                deleteQuery.bindValue(":id", id);
+                if (deleteQuery.exec()) {
+                    QMessageBox::information(this, "Resolved", "Item removed successfully.");
+                    notifyLendBorrow(); // Refresh the data
+                    Capital::editAvailableBalance(amount, tag);
+                    showAvailableBalance();
+                } else {
+                    QMessageBox::warning(this, "Error", "Failed to delete item.");
+                }
             }
-        } else {
+            else{
+                QMessageBox::critical(this, "Insufficient Balance", "You do not have suffiicent balance.");
+            }
+        }
+        else {
             QMessageBox::warning(this, "Error", "Failed to retrieve amount.");
         }
     }
 }
 
+void Home::borrowResolved(int id, double amount) {
+    double balance = Capital::getAvailableBalance();
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Delete", "Are you sure you've cleared the sum?",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        // Update the record's payMode to "self"
+        QSqlQuery updateQuery;
+        updateQuery.prepare("UPDATE userrec SET payMode = 'self' WHERE id = :id");
+        updateQuery.bindValue(":id", id);
+        if(balance >= amount){
+            // Execute the update query
+            if (updateQuery.exec()) {
+                QMessageBox::information(this, "Resolved", "Item removed successfully.");
+                // Commit the transaction if everything is successful
+                displayStatement();
+                // Refresh the UI to reflect the changes
+                notifyLendBorrow();
+                Capital::editAvailableBalance(amount, "borrowR");
+                showAvailableBalance();
+
+            } else {
+                QSqlDatabase::database().rollback();
+                qDebug() << "Failed to update record in userrec: " << updateQuery.lastError();
+            }
+        }
+        else{
+            QMessageBox::critical(this, "Insufficient Balance", "You do not have suffiicent balance.");
+        }
+    }
+
+    else {
+        QMessageBox::warning(this, "Error", "Failed to remove item.");
+    }
+
+}
 
 // Function to validate the input of lend borrow
 bool Home::validateInput(QString amount, QString description) {
@@ -443,16 +574,6 @@ void Home::on_borrowButton_clicked()
 }
 
 
-void Home::on_analyticsButton_clicked()
-{
-        this->hide();
-        analyticsWindow = new Analytics;
-        analyticsWindow->show();
-        // delete (this);
-
-}
-
-
 bool Home::validateInput(int &amount, QString &description, QString &category, QString &payMode) {
     bool ok;
     // Checking whether the amount is a number or not
@@ -498,9 +619,12 @@ void Home::insertData(int amount, const QString &description, const QString &cat
         // Execute the query and display appropriate message boxes
         if (query.exec()) {
             displayStatement();  // Update the label after inserting data
+            notifyLendBorrow();  // Update the notification section if added as borrow
+            if(payMode.toLower() == "self"){
             Capital::editAvailableBalance(amount, "expense");
             Capital::storeBudgetS(currentMonth, currentYear);
             Home::showAvailableBalance();
+            }
         } else {
             QMessageBox::critical(this, "Database Error", "Failed to save data: " + query.lastError().text());
         }
@@ -510,7 +634,7 @@ void Home::insertData(int amount, const QString &description, const QString &cat
 
 void Home::callAvailableBalance(){
     Home *home = new Home(nullptr); // or pass a valid QWidget pointer as parent
-   home->showAvailableBalance();
+    home->showAvailableBalance();
 }
 void Home::showAvailableBalance(){
     double amount = Capital::getAvailableBalance();
@@ -534,3 +658,21 @@ void Home::on_addItemButton_clicked()
     insertData(amountD, descD, catecD, modeD);
 }
 
+void Home::on_analyticsButton_clicked()
+{
+    this->hide();
+    analyticsWindow = new Analytics;
+    analyticsWindow->show();
+    // delete (this);
+}
+
+void Home::on_pushButton_clicked()
+{
+    // Show a confirmation dialog
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Confirm Exit", "Are you sure you want to exit?",
+                                  QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        QApplication::quit(); // Close the application
+    }
+}

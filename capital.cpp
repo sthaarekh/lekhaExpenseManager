@@ -7,7 +7,7 @@
 
 Capital::Capital(Analytics& analytics) : analyticsRef(analytics) {
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("C:/Programming/project/shubham/database/mydb.db");
+    db.setDatabaseName("/Users/sthaarekh/Documents/       /lekhaFinal/database/mydb.db");
     if (!db.open()) {
         qDebug() << "Error: Connection with database failed in capital";
     }
@@ -151,7 +151,7 @@ double Capital::getCapital(int month, int year) {
 double Capital::getTotalExpense(int year, int month) {
     QSqlQuery query;
     query.prepare("SELECT SUM(amount) FROM userrec WHERE "
-                  "strftime('%Y', timestamp) = :year AND strftime('%m', timestamp) = :month");
+                  "strftime('%Y', timestamp) = :year AND strftime('%m', timestamp) = :month AND payMode= 'self'");
     query.bindValue(":year", QString::number(year));
     query.bindValue(":month", QString("%1").arg(month, 2, 10, QChar('0')));  // Format month as two digits
 
@@ -203,17 +203,27 @@ double Capital::getTotalLB(const QString &tag) {
     QSqlQuery query;
     query.prepare("SELECT amount FROM lendBorrow WHERE tag = :tag");
     query.bindValue(":tag", tag);
-
+    QSqlQuery query1;
+    query1.prepare("SELECT amount FROM userrec WHERE payMode = 'borrow'");
     if (!query.exec()) {
-        qDebug() << "Error executing query at getTotalLend:" << query.lastError();
+        qDebug() << "Error executing query at getTotalLB:" << query.lastError();
         return 0.0;
     }
 
-    double totalLend = 0.0;
+    double totalAmount = 0.0;
     while (query.next()) {
-        totalLend += query.value(0).toDouble();
+        totalAmount += query.value(0).toDouble();
     }
-    return totalLend;
+    if(tag=="borrow"){
+        if (!query1.exec()) {
+            qDebug() << "Error executing query at getTotalLend:" << query.lastError();
+            return 0.0;
+        }
+        while (query1.next()) {
+            totalAmount += query1.value(0).toDouble();
+        }
+    }
+    return totalAmount;
 }
 
 
@@ -233,7 +243,7 @@ double Capital::getAvailableBalance(){
     }
 }
 
-double Capital::editAvailableBalance(double amount, const QString &tag){
+void Capital::editAvailableBalance(double amount, const QString &tag){
     double availableBalance = Capital::getAvailableBalance();
     if(tag=="lend"){
         availableBalance -= amount;

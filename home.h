@@ -44,10 +44,12 @@ private slots:
     void on_analyticsButton_clicked();
 
     void deleteItem(int id);
-
+    void borrowResolved(int id, double amount);
 
 
     void on_addItemButton_clicked();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::Home *ui;

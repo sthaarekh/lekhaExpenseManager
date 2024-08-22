@@ -263,7 +263,7 @@ border:10px;
        <rect>
         <x>120</x>
         <y>25</y>
-        <width>61</width>
+        <width>81</width>
         <height>31</height>
        </rect>
       </property>
@@ -474,12 +474,12 @@ border:10px;
 background-color:rgb(170, 190, 98);
 border:10px;
 color:white;
-font: 15pt &quot;Rubik&quot;;
+font: 22pt &quot;Rubik&quot;;
 transition:0.9s;
 }
 
 QPushButton:hover{
-	font: 17pt &quot;Rubik&quot;;
+	font: 24pt &quot;Rubik&quot;;
 	color:white;
 	
 }</string>
@@ -491,9 +491,9 @@ QPushButton:hover{
      <widget class="QPushButton" name="analyticsButton">
       <property name="geometry">
        <rect>
-        <x>190</x>
+        <x>220</x>
         <y>25</y>
-        <width>101</width>
+        <width>121</width>
         <height>31</height>
        </rect>
       </property>
@@ -704,12 +704,12 @@ QPushButton:hover{
 background-color:rgb(170, 190, 98);
 border:10px;
 color:rgb(109, 109, 109);
-font: 15pt &quot;Rubik&quot;;
+font: 22pt &quot;Rubik&quot;;
 transition:0.9s;
 }
 
 QPushButton:hover{
-	font: 17pt &quot;Rubik&quot;;
+	font: 24pt &quot;Rubik&quot;;
 	color:white;
 }</string>
       </property>
@@ -717,51 +717,83 @@ QPushButton:hover{
        <string>Analytics</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_4">
-      <property name="geometry">
-       <rect>
-        <x>850</x>
-        <y>20</y>
-        <width>121</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>24</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">*{
-color: black;
-}</string>
-      </property>
-      <property name="text">
-       <string>Balance</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="avBalance">
       <property name="geometry">
        <rect>
-        <x>960</x>
+        <x>1250</x>
         <y>20</y>
-        <width>141</width>
-        <height>31</height>
+        <width>131</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="font">
        <font>
-        <pointsize>24</pointsize>
+        <family>Rubik</family>
+        <pointsize>28</pointsize>
+        <italic>false</italic>
+        <bold>false</bold>
        </font>
       </property>
       <property name="styleSheet">
        <string notr="true">*{
 color: black;
+font:28pt&quot;Rubik&quot;;
 }</string>
       </property>
       <property name="text">
        <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>1460</x>
+        <y>26</y>
+        <width>41</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(170, 190, 98);
+border:10px;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lekhaResources.qrc">
+        <normaloff>:/pics/LekhaResources/exit.png</normaloff>:/pics/LekhaResources/exit.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>30</width>
+        <height>30</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>1230</x>
+        <y>21</y>
+        <width>51</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="lekhaResources.qrc">:/pics/LekhaResources/dollar.png</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
       </property>
      </widget>
     </widget>
@@ -769,7 +801,7 @@ color: black;
      <property name="geometry">
       <rect>
        <x>770</x>
-       <y>100</y>
+       <y>90</y>
        <width>721</width>
        <height>411</height>
       </rect>
@@ -782,7 +814,7 @@ border: 1px;
 
 QScrollBar:vertical {
     border: 1px solid #999999;
-    background: #f2f2f2;
+    background-color:#A7A2A9;
     width: 15px;
     margin: 0px 0px 0px 0px;
 	border-radius:7px;
@@ -884,8 +916,8 @@ QScrollBar::sub-line:vertical {
     <widget class="QFrame" name="verticalFrame">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>90</y>
+       <x>30</x>
+       <y>80</y>
        <width>751</width>
        <height>411</height>
       </rect>
@@ -1193,6 +1225,9 @@ border:0px;
              <kerning>true</kerning>
             </font>
            </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
            <property name="layoutDirection">
             <enum>Qt::RightToLeft</enum>
            </property>
@@ -1200,10 +1235,13 @@ border:0px;
             <string notr="true">*{
 border: 1px solid white;
 border-radius:8px;
-background-color:rgb(179,190,98);;
+background-color:rgb(149, 170, 175);
 color:white;
 font: 700 14pt &quot;Comic Sans MS&quot;;
 width: 20px;
+}
+QPushButton:hover{
+background-color:rgb(149, 130, 175);
 }</string>
            </property>
            <property name="text">
@@ -1218,16 +1256,16 @@ width: 20px;
        <widget class="QFrame" name="horizontalFrame_3">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="spacing">
-          <number>14</number>
+          <number>10</number>
          </property>
          <property name="leftMargin">
-          <number>7</number>
+          <number>2</number>
          </property>
          <property name="topMargin">
-          <number>7</number>
+          <number>6</number>
          </property>
          <property name="rightMargin">
-          <number>7</number>
+          <number>0</number>
          </property>
          <property name="bottomMargin">
           <number>7</number>
@@ -1246,7 +1284,7 @@ border-radius:14px;
 
 </string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,10,10,3">
+           <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,10,0,3">
             <property name="spacing">
              <number>14</number>
             </property>
@@ -1299,11 +1337,20 @@ color: black;
             </item>
             <item>
              <widget class="QLineEdit" name="descriptionL">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
               </property>
               <property name="styleSheet">
                <string notr="true">QLineEdit
@@ -1353,6 +1400,9 @@ color: black;
                 <kerning>true</kerning>
                </font>
               </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
@@ -1360,10 +1410,13 @@ color: black;
                <string notr="true">*{
 border: 1px solid white;
 border-radius:8px;
-background-color:rgb(179,190,98);;
+background-color:rgb(149, 170, 175);
 color:white;
 font: 700 14pt &quot;Comic Sans MS&quot;;
 width: 20px;
+}
+QPushButton:hover{
+background-color:rgb(149, 130, 175);
 }</string>
               </property>
               <property name="text">
@@ -1489,6 +1542,9 @@ color: black;
                 <kerning>true</kerning>
                </font>
               </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
@@ -1496,10 +1552,13 @@ color: black;
                <string notr="true">*{
 border: 1px solid white;
 border-radius:8px;
-background-color:rgb(179,190,98);;
+background-color:rgb(149, 170, 175);
 color:white;
 font: 700 14pt &quot;Comic Sans MS&quot;;
 width: 20px;
+}
+QPushButton:hover{
+background-color:rgb(149, 130, 175);
 }</string>
               </property>
               <property name="text">
@@ -1519,7 +1578,7 @@ width: 20px;
      <property name="geometry">
       <rect>
        <x>50</x>
-       <y>540</y>
+       <y>520</y>
        <width>261</width>
        <height>31</height>
       </rect>

@@ -19,5 +19,9 @@
         <file>LekhaResources/education.png</file>
         <file>LekhaResources/entertainment.png</file>
         <file>LekhaResources/health.png</file>
+        <file>LekhaResources/dollar.png</file>
+        <file>LekhaResources/exit.png</file>
+        <file>LekhaResources/grab.png</file>
+        <file>LekhaResources/logout.png</file>
     </qresource>
 </RCC>
