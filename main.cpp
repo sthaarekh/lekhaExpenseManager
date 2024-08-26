@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     // Show the home window after the splash screen is closed
     QTimer::singleShot(1000, [homeWindow]() {
-        homeWindow->show();
+        homeWindow->showFullScreen();
         Capital capital(analytics);
     });
 

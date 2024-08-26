@@ -91,7 +91,6 @@ QList<double> getLastFiveMonthsBudgets() {
     return budgets;
 }
 
-
 void Analytics::showBudgetS() {
     QWidget *widget = ui->budgetArea->widget();
     if (!widget) {
@@ -260,9 +259,13 @@ void Analytics::setupBarChart()
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
-    // Set up the Y axis
+    // Calculate the dynamic range for Y axis
+    double minY = 0; // Assuming bar chart starts at 0
+    double maxY = *std::max_element(dataValues.begin(), dataValues.end());
+
+    // Set up the Y axis with dynamic range
     QValueAxis *axisY = new QValueAxis();
-    axisY->setRange(0, 15000); // Adjust this range as necessary
+    axisY->setRange(minY, maxY + (maxY * 0.1)); // Adding 10% buffer above max value for better visual
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
 
@@ -280,19 +283,17 @@ void Analytics::setupBarChart()
     QVBoxLayout *layout = new QVBoxLayout(chartContainer);
     layout->addWidget(chartView);
 
-
     // Add the chart container to an existing layout in the UI
     ui->barChartWidget->setLayout(new QVBoxLayout());
     ui->barChartWidget->layout()->addWidget(chartContainer);
 }
-
-
 void Analytics::displayCapital(){
     double amount = Capital::getCapital(currentDate.month(),currentDate.year());
     // Convert the double to QString
-    QString amountString =  "Rs. " + QString::number(amount);
+    QString amountString =  "Rs. " + QString::number(amount, 'f', 0);
     // Set the text of the QLabel
     ui->capitalDisplay->setText(amountString);
+
 }
 
 
@@ -319,9 +320,10 @@ void Analytics::on_calendarWidget_currentPageChanged(int year, int month)
     setupPieChart();
 }
 
+
 void Analytics::showAvailableBalance(){
     double amount = Capital::getAvailableBalance();
-    ui->avBalance->setText(QString::number(amount));
+    ui->avBalance->setText(QString::number(amount, 'f', 0));
 }
 
 

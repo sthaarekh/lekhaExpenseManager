@@ -142,7 +142,7 @@ void Home::displayStatement() {
 
         // Set the image according to the category
         if (category == "food") {
-            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/food.png").scaled(40, 40));
+            imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/diet.png").scaled(40, 40));
         } else if (category == "transportation") {
             imageLabel->setPixmap(QPixmap(":/pics/LekhaResources/train.png").scaled(40, 40));
         } else if (category == "entertainment") {
@@ -495,7 +495,7 @@ bool Home::validateInput(QString amount, QString description) {
     bool ok;
     // Checking whether the amount is a number or not
     int num = amount.toInt(&ok);
-    if (!ok) {
+    if (!ok || num<0) {
         QMessageBox::critical(this, "Invalid Input", "Invalid amount. Please enter a numeric value.");
         return false;
     }
@@ -505,6 +505,7 @@ bool Home::validateInput(QString amount, QString description) {
         QMessageBox::warning(this, "Input Error", "Description must be at least 3 letters long.");
         return false;
     }
+
     return true;
 }
 
@@ -578,7 +579,8 @@ bool Home::validateInput(int &amount, QString &description, QString &category, Q
     bool ok;
     // Checking whether the amount is a number or not
     amount = ui->amountAI->text().toInt(&ok);
-    if (!ok) {
+    qDebug()<<"Amount is :"<<amount;
+    if (!ok || amount<0) {
         QMessageBox::critical(this, "Invalid Input", "Invalid amount. Please enter a numeric value.");
         return false;
     }
@@ -588,6 +590,16 @@ bool Home::validateInput(int &amount, QString &description, QString &category, Q
     if (description.length() < 3 ) {
         // Show an error message or handle the condition appropriately
         QMessageBox::warning(this, "Input Error", "Description  must be at least 3 letters long.");
+        return false;
+    }
+    if (category.length() < 3) {
+        // Show an error message or handle the condition appropriately
+        QMessageBox::warning(this, "Input Error", "Make sure you have choosen a category.");
+        return false;
+    }
+    if (payMode.length() < 3) {
+        // Show an error message or handle the condition appropriately
+        QMessageBox::warning(this, "Input Error", "Make sure you have choosen the paymode. ");
         return false;
     }
     return true;
@@ -638,7 +650,7 @@ void Home::callAvailableBalance(){
 }
 void Home::showAvailableBalance(){
     double amount = Capital::getAvailableBalance();
-    ui->avBalance->setText(QString::number(amount));
+    ui->avBalance->setText(QString::number(amount, 'f', 0));
 }
 
 

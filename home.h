@@ -56,7 +56,7 @@ private:
     QMap<QFrame*, int> frameToIdMap;
     Analytics *analyticsWindow;
     QSqlDatabase db;
-    bool validateInput(QString amount, QString description);
+    bool validateInput(QString amount, QString description );
     bool validateInput(int &amount, QString &description, QString &category, QString &payMode);
     void insertData(int amount, const QString &description, const QString &category, const QString &payMode);
     void insertData(int amount, const QString &description, const QString &tag);

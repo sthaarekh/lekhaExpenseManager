@@ -71,7 +71,7 @@ bool Capital::addCapital() {
     }
 
     bool ok;
-    double amount = QInputDialog::getDouble(nullptr, "Add Capital", "Enter amount to add to the capital:", 0, 0, 1000000, 2, &ok);
+    double amount = QInputDialog::getDouble(nullptr, "Add Capital", "Enter amount to add to the capital:", 0, 0, 1000000, 0, &ok);
     if (ok) {
         double newCapital = currentCapital + amount;
         double newBalance = amount + getAvailableBalance();
@@ -268,7 +268,6 @@ void Capital::updateAvailableBalance(double newBalance){
     query.prepare("UPDATE balance SET balance = :balance WHERE id =1 ");
     query.bindValue(":balance", newBalance);
     if (query.exec()) {
-        qDebug()<< "Balance for the month inserted successfully.";
         Home::callAvailableBalance();
     } else {
         qDebug()<< "Failed to insert balance:" << query.lastError();

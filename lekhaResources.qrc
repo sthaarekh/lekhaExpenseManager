@@ -23,5 +23,6 @@
         <file>LekhaResources/exit.png</file>
         <file>LekhaResources/grab.png</file>
         <file>LekhaResources/logout.png</file>
+        <file>LekhaResources/diet.png</file>
     </qresource>
 </RCC>
